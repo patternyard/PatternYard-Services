@@ -575,14 +575,14 @@
       "path": "/api/v1/users/customization/setCustomization",
       "source": "api/v1/routes/users/meta/customization/setCustomization.js",
       "family": "users",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "POST",
       "path": "/api/v1/users/customization/setCustomizationDisabled",
       "source": "api/v1/routes/users/meta/customization/setCustomizationDisabled.js",
       "family": "users",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "POST",
@@ -1009,7 +1009,7 @@
       "path": "/api/v1/users/setBio",
       "source": "api/v1/routes/users/meta/setBio.js",
       "family": "users",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "POST",
@@ -1030,7 +1030,7 @@
       "path": "/api/v1/users/setmyfeaturedproject",
       "source": "api/v1/routes/users/meta/setMyFeaturedProject.js",
       "family": "users",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "POST",
