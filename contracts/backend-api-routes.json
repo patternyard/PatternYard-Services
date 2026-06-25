@@ -435,14 +435,14 @@
       "path": "/api/v1/reports/getReports",
       "source": "api/v1/routes/misc/reports/getReports.js",
       "family": "misc",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "GET",
       "path": "/api/v1/reports/getReportsByTarget",
       "source": "api/v1/routes/misc/reports/getReportsByTarget.js",
       "family": "misc",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "POST",
