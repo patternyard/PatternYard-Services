@@ -7,6 +7,8 @@ use axum::response::{IntoResponse, Redirect, Response};
 use axum::routing::get;
 use serde::Serialize;
 
+mod public_projects;
+
 #[derive(Serialize)]
 struct ApiMetadata<'a> {
     unavailable: Availability,
@@ -64,6 +66,7 @@ pub(crate) fn router_with_database(database: Database) -> Router {
         .route("/api/v1/ready", get(ready))
         .route("/api/v1/robots.txt", get(robots))
         .route("/robots.txt", get(robots))
+        .merge(public_projects::router())
         .with_state(database)
 }
 
