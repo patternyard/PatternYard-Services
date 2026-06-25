@@ -617,7 +617,7 @@
       "path": "/api/v1/users/getadmins",
       "source": "api/v1/routes/users/mod/admin_only/getadmins.js",
       "family": "users",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "GET",
@@ -680,7 +680,7 @@
       "path": "/api/v1/users/getmods",
       "source": "api/v1/routes/users/mod/admin_only/getmods.js",
       "family": "users",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "GET",
