@@ -169,7 +169,7 @@
       "path": "/api/v1/projects/getfeaturedprojects",
       "source": "api/v1/routes/projects/search/getFeaturedProjects.js",
       "family": "projects",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "GET",
@@ -190,14 +190,14 @@
       "path": "/api/v1/projects/getproject",
       "source": "api/v1/routes/projects/getProject.js",
       "family": "projects",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "GET",
       "path": "/api/v1/projects/getprojects",
       "source": "api/v1/routes/projects/getProjects.js",
       "family": "projects",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "GET",
@@ -218,14 +218,14 @@
       "path": "/api/v1/projects/getrandomproject",
       "source": "api/v1/routes/projects/search/getRandom.js",
       "family": "projects",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "GET",
       "path": "/api/v1/projects/getremixes",
       "source": "api/v1/routes/projects/search/getRemixes.js",
       "family": "projects",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "GET",
@@ -365,7 +365,7 @@
       "path": "/api/v1/projects/searchprojects",
       "source": "api/v1/routes/projects/search/searchProjects.js",
       "family": "projects",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "GET",
