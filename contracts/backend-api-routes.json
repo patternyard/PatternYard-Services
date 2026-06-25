@@ -302,35 +302,35 @@
       "path": "/api/v1/projects/interactions/loveToggle",
       "source": "api/v1/routes/projects/interactions/loveToggle.js",
       "family": "projects",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "POST",
       "path": "/api/v1/projects/interactions/registerView",
       "source": "api/v1/routes/projects/interactions/registerView.js",
       "family": "projects",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "POST",
       "path": "/api/v1/projects/interactions/showMeLess",
       "source": "api/v1/routes/projects/interactions/showMeLess.js",
       "family": "projects",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "POST",
       "path": "/api/v1/projects/interactions/showMeMore",
       "source": "api/v1/routes/projects/interactions/showMeMore.js",
       "family": "projects",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "POST",
       "path": "/api/v1/projects/interactions/voteToggle",
       "source": "api/v1/routes/projects/interactions/voteToggle.js",
       "family": "projects",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "POST",
