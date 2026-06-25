@@ -133,13 +133,13 @@ async fn migrate_users(
 
         match UserRecord::from_document(&document) {
             Ok(user) => {
-                if let Some(pool) = target {
-                    if let Err(error) = upsert_user(pool, &user).await {
-                        stats.rejected += 1;
-                        record_rejection(pool, "users", &source_id_hash, "target-write").await?;
-                        eprintln!("rejected users record {}: {error:#}", source_id_hash);
-                        continue;
-                    }
+                if let Some(pool) = target
+                    && let Err(error) = upsert_user(pool, &user).await
+                {
+                    stats.rejected += 1;
+                    record_rejection(pool, "users", &source_id_hash, "target-write").await?;
+                    eprintln!("rejected users record {}: {error:#}", source_id_hash);
+                    continue;
                 }
                 stats.migrated += 1;
             }
