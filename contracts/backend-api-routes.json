@@ -932,7 +932,7 @@
       "path": "/api/v1/users/requestrankup",
       "source": "api/v1/routes/users/requestRankUp.js",
       "family": "users",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "POST",
