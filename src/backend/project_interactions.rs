@@ -3,10 +3,10 @@ use crate::db::Database;
 use axum::extract::{Query, State};
 use axum::http::StatusCode;
 use axum::response::{IntoResponse, Response};
-use axum::routing::get;
+use axum::routing::{get, post};
 use axum::{Json, Router};
 use serde::{Deserialize, Serialize};
-use serde_json::json;
+use serde_json::{Value, json};
 use sqlx::PgPool;
 
 const PAGE_SIZE: i64 = 20;
@@ -19,6 +19,15 @@ struct InteractionQuery {
     project_id: Option<String>,
     target: Option<String>,
     page: Option<i64>,
+}
+
+#[derive(Deserialize, Default)]
+#[serde(rename_all = "camelCase")]
+struct InteractionBody {
+    token: Option<Value>,
+    #[serde(alias = "projectID")]
+    project_id: Option<Value>,
+    toggle: Option<Value>,
 }
 
 #[derive(Serialize)]
@@ -37,6 +46,26 @@ pub fn router() -> Router<Database> {
         .route(
             "/api/v1/projects/getuserstatewrapper",
             get(get_user_state_wrapper),
+        )
+        .route(
+            "/api/v1/projects/interactions/loveToggle",
+            post(love_toggle),
+        )
+        .route(
+            "/api/v1/projects/interactions/voteToggle",
+            post(vote_toggle),
+        )
+        .route(
+            "/api/v1/projects/interactions/registerView",
+            post(register_view),
+        )
+        .route(
+            "/api/v1/projects/interactions/showMeLess",
+            post(show_me_less),
+        )
+        .route(
+            "/api/v1/projects/interactions/showMeMore",
+            post(show_me_more),
         )
 }
 
@@ -80,6 +109,111 @@ async fn has_voted_admin(
     Query(query): Query<InteractionQuery>,
 ) -> Response {
     get_interaction_state(database, query, "vote", "hasVoted", true).await
+}
+
+async fn love_toggle(
+    State(database): State<Database>,
+    Json(body): Json<InteractionBody>,
+) -> Response {
+    toggle_interaction(database, body, "love", "loves", false).await
+}
+
+async fn vote_toggle(
+    State(database): State<Database>,
+    Json(body): Json<InteractionBody>,
+) -> Response {
+    toggle_interaction(database, body, "vote", "votes", true).await
+}
+
+async fn register_view(
+    State(database): State<Database>,
+    Json(body): Json<InteractionBody>,
+) -> Response {
+    record_signal(database, body, "view").await
+}
+
+async fn show_me_less(
+    State(database): State<Database>,
+    Json(body): Json<InteractionBody>,
+) -> Response {
+    record_signal(database, body, "show_less").await
+}
+
+async fn show_me_more(
+    State(database): State<Database>,
+    Json(body): Json<InteractionBody>,
+) -> Response {
+    record_signal(database, body, "show_more").await
+}
+
+async fn toggle_interaction(
+    database: Database,
+    body: InteractionBody,
+    kind: &'static str,
+    counter: &'static str,
+    reject_missing: bool,
+) -> Response {
+    let token = legacy_json_string(body.token);
+    let project_id = legacy_json_string(body.project_id);
+    let toggle = legacy_json_bool(body.toggle);
+    let Some(pool) = database.pool() else {
+        return api_error(StatusCode::SERVICE_UNAVAILABLE, "Database unavailable");
+    };
+    let user = match authenticate_token(pool, &token).await {
+        Ok(Some(user)) => user,
+        Ok(None) => return api_error(StatusCode::UNAUTHORIZED, "Reauthenticate"),
+        Err(error) => return query_failed(error),
+    };
+    match project_exists(pool, &project_id).await {
+        Ok(false) => return api_error(StatusCode::NOT_FOUND, "Project not found"),
+        Err(error) => return query_failed(error),
+        Ok(true) => {}
+    }
+    let existing = match has_interaction(pool, &project_id, &user.id, kind).await {
+        Ok(existing) => existing,
+        Err(error) => return query_failed(error),
+    };
+    if existing && toggle {
+        return api_error(
+            StatusCode::BAD_REQUEST,
+            if kind == "love" {
+                "Already loved"
+            } else {
+                "Already voted"
+            },
+        );
+    }
+    if !existing && !toggle && reject_missing {
+        return api_error(StatusCode::BAD_REQUEST, "Not voted");
+    }
+
+    match set_interaction(pool, &project_id, &user.id, kind, counter, toggle).await {
+        Ok(()) => Json(json!({ "success": true })).into_response(),
+        Err(error) => query_failed(error),
+    }
+}
+
+async fn record_signal(database: Database, body: InteractionBody, kind: &'static str) -> Response {
+    let token = legacy_json_string(body.token);
+    let project_id = legacy_json_string(body.project_id);
+    let Some(pool) = database.pool() else {
+        return api_error(StatusCode::SERVICE_UNAVAILABLE, "Database unavailable");
+    };
+    let user = match authenticate_token(pool, &token).await {
+        Ok(Some(user)) => user,
+        Ok(None) => return api_error(StatusCode::UNAUTHORIZED, "Reauthenticate"),
+        Err(error) => return query_failed(error),
+    };
+    match project_exists(pool, &project_id).await {
+        Ok(false) => return api_error(StatusCode::NOT_FOUND, "Project not found"),
+        Err(error) => return query_failed(error),
+        Ok(true) => {}
+    }
+
+    match insert_signal(pool, &project_id, &user.id, kind).await {
+        Ok(()) => Json(json!({ "success": true })).into_response(),
+        Err(error) => query_failed(error),
+    }
 }
 
 async fn get_user_state_wrapper(
@@ -230,6 +364,79 @@ async fn has_interaction(
     .await
 }
 
+async fn set_interaction(
+    pool: &PgPool,
+    project_id: &str,
+    user_id: &str,
+    kind: &str,
+    counter: &str,
+    toggle: bool,
+) -> Result<(), sqlx::Error> {
+    let mut transaction = pool.begin().await?;
+    if toggle {
+        sqlx::query(
+            "INSERT INTO app.project_interactions (project_id, user_id, kind) \
+             VALUES ($1, $2, $3)",
+        )
+        .bind(project_id)
+        .bind(user_id)
+        .bind(kind)
+        .execute(&mut *transaction)
+        .await?;
+    } else {
+        sqlx::query(
+            "DELETE FROM app.project_interactions \
+             WHERE project_id = $1 AND user_id = $2 AND kind = $3",
+        )
+        .bind(project_id)
+        .bind(user_id)
+        .bind(kind)
+        .execute(&mut *transaction)
+        .await?;
+    }
+
+    let update = match counter {
+        "loves" => {
+            "UPDATE app.projects SET loves = (\
+                 SELECT count(*) FROM app.project_interactions \
+                 WHERE project_id = $1 AND kind = 'love'\
+             ) WHERE id = $1"
+        }
+        "votes" => {
+            "UPDATE app.projects SET votes = (\
+                 SELECT count(*) FROM app.project_interactions \
+                 WHERE project_id = $1 AND kind = 'vote'\
+             ) WHERE id = $1"
+        }
+        _ => unreachable!("interaction counters are fixed route constants"),
+    };
+    sqlx::query(update)
+        .bind(project_id)
+        .execute(&mut *transaction)
+        .await?;
+    transaction.commit().await
+}
+
+async fn insert_signal(
+    pool: &PgPool,
+    project_id: &str,
+    user_id: &str,
+    kind: &str,
+) -> Result<(), sqlx::Error> {
+    sqlx::query(
+        "INSERT INTO app.project_interactions (project_id, user_id, kind) \
+         VALUES ($1, $2, $3) \
+         ON CONFLICT (project_id, user_id, kind) \
+         DO UPDATE SET created_at = now()",
+    )
+    .bind(project_id)
+    .bind(user_id)
+    .bind(kind)
+    .execute(pool)
+    .await?;
+    Ok(())
+}
+
 async fn interaction_states(
     pool: &PgPool,
     project_id: &str,
@@ -272,6 +479,19 @@ fn legacy_string(value: Option<String>) -> String {
     value.unwrap_or_else(|| "undefined".to_owned())
 }
 
+fn legacy_json_string(value: Option<Value>) -> String {
+    match value {
+        None => "undefined".to_owned(),
+        Some(Value::String(value)) => value,
+        Some(Value::Null) => "null".to_owned(),
+        Some(value) => value.to_string(),
+    }
+}
+
+fn legacy_json_bool(value: Option<Value>) -> bool {
+    legacy_json_string(value) == "true"
+}
+
 fn query_failed(error: sqlx::Error) -> Response {
     tracing::error!(%error, "project interaction query failed");
     api_error(StatusCode::INTERNAL_SERVER_ERROR, "Internal server error")
@@ -295,5 +515,13 @@ mod tests {
     fn response_keys_are_legacy_cased() {
         let body: Value = json!({ "loves": ["builder"] });
         assert_eq!(body["loves"][0], "builder");
+    }
+
+    #[test]
+    fn toggle_body_matches_legacy_string_coercion() {
+        assert!(legacy_json_bool(Some(json!(true))));
+        assert!(legacy_json_bool(Some(json!("true"))));
+        assert!(!legacy_json_bool(Some(json!(false))));
+        assert_eq!(legacy_json_string(None), "undefined");
     }
 }
