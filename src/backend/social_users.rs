@@ -3,10 +3,10 @@ use crate::db::Database;
 use axum::extract::{Query, State};
 use axum::http::StatusCode;
 use axum::response::{IntoResponse, Response};
-use axum::routing::get;
+use axum::routing::{get, post};
 use axum::{Json, Router};
 use serde::{Deserialize, Serialize};
-use serde_json::json;
+use serde_json::{Value, json};
 use sqlx::{PgPool, QueryBuilder};
 
 const DEFAULT_PAGE_SIZE: i64 = 20;
@@ -35,6 +35,14 @@ struct AuthTargetQuery {
     target: Option<String>,
 }
 
+#[derive(Deserialize, Default)]
+struct SocialWriteBody {
+    token: Option<Value>,
+    target: Option<Value>,
+    #[serde(alias = "toggle")]
+    active: Option<Value>,
+}
+
 #[derive(Serialize, sqlx::FromRow)]
 struct FollowerSummary {
     id: String,
@@ -55,6 +63,99 @@ pub fn router() -> Router<Database> {
         .route("/api/v1/users/hasblocked", get(has_blocked))
         .route("/api/v1/users/isadmin", get(is_admin))
         .route("/api/v1/users/ismod", get(is_moderator))
+        .route("/api/v1/users/blockuser", post(block_user))
+        .route("/api/v1/users/follow", post(follow_user))
+}
+
+async fn block_user(
+    State(database): State<Database>,
+    Json(body): Json<SocialWriteBody>,
+) -> Response {
+    let token = legacy_json_string(body.token);
+    let target = legacy_json_string(body.target);
+    let active = legacy_json_bool(body.active);
+    let Some(pool) = database.pool() else {
+        return database_unavailable();
+    };
+    let user = match authenticate_token(pool, &token).await {
+        Ok(Some(user)) => user,
+        Ok(None) => return api_error(StatusCode::BAD_REQUEST, "Reauthenticate"),
+        Err(error) => return query_failed(error),
+    };
+    let target_id = match user_id(pool, &target).await {
+        Ok(Some(id)) => id,
+        Ok(None) => return api_error(StatusCode::NOT_FOUND, "Target not found"),
+        Err(error) => return query_failed(error),
+    };
+    if user.id == target_id {
+        return api_error(StatusCode::UNAUTHORIZED, "Cannot block yourself");
+    }
+
+    let result = if active {
+        sqlx::query(
+            "INSERT INTO app.blocks (blocker_id, blocked_id) VALUES ($1, $2) \
+             ON CONFLICT (blocker_id, blocked_id) DO UPDATE SET created_at = now()",
+        )
+        .bind(user.id)
+        .bind(target_id)
+        .execute(pool)
+        .await
+    } else {
+        sqlx::query("DELETE FROM app.blocks WHERE blocker_id = $1 AND blocked_id = $2")
+            .bind(user.id)
+            .bind(target_id)
+            .execute(pool)
+            .await
+    };
+
+    match result {
+        Ok(_) => Json(json!({ "success": true })).into_response(),
+        Err(error) => query_failed(error),
+    }
+}
+
+async fn follow_user(
+    State(database): State<Database>,
+    Json(body): Json<SocialWriteBody>,
+) -> Response {
+    let token = legacy_json_string(body.token);
+    let target = legacy_json_string(body.target).to_lowercase();
+    let toggle = legacy_json_bool(body.active);
+    let Some(pool) = database.pool() else {
+        return database_unavailable();
+    };
+    let user = match authenticate_token(pool, &token).await {
+        Ok(Some(user)) => user,
+        Ok(None) => return api_error(StatusCode::BAD_REQUEST, "Reauthenticate"),
+        Err(error) => return query_failed(error),
+    };
+    let target_id = match user_id(pool, &target).await {
+        Ok(Some(id)) => id,
+        Ok(None) => return api_error(StatusCode::BAD_REQUEST, "Invalid target"),
+        Err(error) => return query_failed(error),
+    };
+    if user.id == target_id {
+        return api_error(StatusCode::BAD_REQUEST, "CannotFollowSelf");
+    }
+    let existing = match follows(pool, &user.id, &target_id).await {
+        Ok(existing) => existing,
+        Err(error) => return query_failed(error),
+    };
+    if existing == toggle {
+        return api_error(
+            StatusCode::BAD_REQUEST,
+            if toggle {
+                "AlreadyFollowing"
+            } else {
+                "NotFollowing"
+            },
+        );
+    }
+
+    match set_following(pool, &user.id, &target_id, toggle).await {
+        Ok(()) => Json(json!({ "success": true })).into_response(),
+        Err(error) => query_failed(error),
+    }
 }
 
 async fn get_followers(
@@ -258,12 +359,61 @@ async fn follows(pool: &PgPool, follower_id: &str, target_id: &str) -> Result<bo
     .await
 }
 
+async fn set_following(
+    pool: &PgPool,
+    follower_id: &str,
+    target_id: &str,
+    active: bool,
+) -> Result<(), sqlx::Error> {
+    let mut transaction = pool.begin().await?;
+    sqlx::query(
+        "INSERT INTO app.follows (follower_id, target_id, active) VALUES ($1, $2, $3) \
+         ON CONFLICT (follower_id, target_id) \
+         DO UPDATE SET active = EXCLUDED.active, updated_at = now()",
+    )
+    .bind(follower_id)
+    .bind(target_id)
+    .bind(active)
+    .execute(&mut *transaction)
+    .await?;
+    sqlx::query(
+        "UPDATE app.users SET following_count = (\
+             SELECT count(*) FROM app.follows WHERE follower_id = $1 AND active\
+         ) WHERE id = $1",
+    )
+    .bind(follower_id)
+    .execute(&mut *transaction)
+    .await?;
+    sqlx::query(
+        "UPDATE app.users SET follower_count = (\
+             SELECT count(*) FROM app.follows WHERE target_id = $1 AND active\
+         ) WHERE id = $1",
+    )
+    .bind(target_id)
+    .execute(&mut *transaction)
+    .await?;
+    transaction.commit().await
+}
+
 fn legacy_string(value: Option<String>) -> String {
     value.unwrap_or_else(|| "undefined".to_owned())
 }
 
 fn legacy_username(value: Option<String>) -> String {
     legacy_string(value).to_lowercase()
+}
+
+fn legacy_json_string(value: Option<Value>) -> String {
+    match value {
+        None => "undefined".to_owned(),
+        Some(Value::String(value)) => value,
+        Some(Value::Null) => "null".to_owned(),
+        Some(value) => value.to_string(),
+    }
+}
+
+fn legacy_json_bool(value: Option<Value>) -> bool {
+    legacy_json_string(value) == "true"
 }
 
 fn legacy_page(value: Option<f64>) -> i64 {
@@ -306,5 +456,13 @@ mod tests {
             json!({ "isBanned": Option::<bool>::None }),
             json!({ "isBanned": null })
         );
+    }
+
+    #[test]
+    fn social_write_body_matches_legacy_coercion() {
+        assert!(legacy_json_bool(Some(json!(true))));
+        assert!(legacy_json_bool(Some(json!("true"))));
+        assert!(!legacy_json_bool(Some(json!(false))));
+        assert_eq!(legacy_json_string(None), "undefined");
     }
 }

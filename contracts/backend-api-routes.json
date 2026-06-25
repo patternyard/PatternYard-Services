@@ -519,7 +519,7 @@
       "path": "/api/v1/users/blockuser",
       "source": "api/v1/routes/users/blockUser.js",
       "family": "users",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "POST",
@@ -610,7 +610,7 @@
       "path": "/api/v1/users/follow",
       "source": "api/v1/routes/users/meta/following/follow.js",
       "family": "users",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "GET",
