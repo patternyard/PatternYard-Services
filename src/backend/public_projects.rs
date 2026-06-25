@@ -282,31 +282,34 @@ async fn fetch_projects_by_query(
 ) -> Result<Vec<Value>, sqlx::Error> {
     let mut builder = QueryBuilder::new(
         "SELECT jsonb_build_object(\
-            'id', p.legacy_id, \
+            'id', p.id, \
             'title', p.title, \
-            'author', jsonb_build_object('id', u.legacy_id, 'username', u.username), \
+            'author', jsonb_build_object('id', u.id, 'username', u.username), \
             'instructions', p.instructions, \
             'notes', p.notes, \
             'rating', p.rating, \
             'public', p.is_public, \
-            'featured', p.is_featured, \
+            'featured', p.featured, \
+            'softRejected', p.soft_rejected, \
+            'hardReject', p.hard_rejected, \
+            'noFeature', p.no_feature, \
+            'modMessage', p.moderation_message, \
             'loves', p.loves, \
             'votes', p.votes, \
             'views', p.views, \
             'impressions', p.impressions, \
             'date', floor(extract(epoch FROM p.created_at) * 1000)::bigint, \
             'lastUpdate', floor(extract(epoch FROM p.updated_at) * 1000)::bigint, \
-            'remix', parent.legacy_id, \
-            'fromDonator', false\
+            'remix', p.remix_of_id, \
+            'fromDonator', 'donator' = ANY(u.badges)\
         ) \
-        FROM projects p \
-        JOIN users u ON u.id = p.author_id \
-        LEFT JOIN projects parent ON parent.id = p.remix_of \
-        WHERE p.is_public = true AND p.moderation_state = 'visible'",
+        FROM app.projects p \
+        JOIN app.users u ON u.id = p.author_id \
+        WHERE p.is_public = true AND NOT p.soft_rejected AND NOT p.hard_rejected",
     );
 
     if let Some(project_id) = project_id {
-        builder.push(" AND p.legacy_id = ").push_bind(project_id);
+        builder.push(" AND p.id = ").push_bind(project_id);
     }
     if let Some(search) = search {
         let pattern = format!("%{search}%");
@@ -320,10 +323,10 @@ async fn fetch_projects_by_query(
             .push(")");
     }
     if let Some(remix_of) = remix_of {
-        builder.push(" AND parent.legacy_id = ").push_bind(remix_of);
+        builder.push(" AND p.remix_of_id = ").push_bind(remix_of);
     }
     if featured_only {
-        builder.push(" AND p.is_featured = true");
+        builder.push(" AND p.featured = true");
     }
 
     if matches!(order, ProjectOrder::Random) {
