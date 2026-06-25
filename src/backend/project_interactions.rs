@@ -6,7 +6,7 @@ use axum::response::{IntoResponse, Response};
 use axum::routing::get;
 use axum::{Json, Router};
 use serde::{Deserialize, Serialize};
-use serde_json::{Value, json};
+use serde_json::json;
 use sqlx::PgPool;
 
 const PAGE_SIZE: i64 = 20;
@@ -124,6 +124,7 @@ fn api_error(status: StatusCode, message: &'static str) -> Response {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use serde_json::Value;
 
     #[test]
     fn missing_legacy_values_are_undefined() {
