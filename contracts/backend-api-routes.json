@@ -232,7 +232,7 @@
       "path": "/api/v1/projects/getuserstatewrapper",
       "source": "api/v1/routes/projects/interactions/getUserStateWrapper.js",
       "family": "projects",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "GET",
@@ -274,28 +274,28 @@
       "path": "/api/v1/projects/hasLoved",
       "source": "api/v1/routes/projects/interactions/hasLoved.js",
       "family": "projects",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "GET",
       "path": "/api/v1/projects/hasLovedAdmin",
       "source": "api/v1/routes/projects/interactions/hasLovedAdmin.js",
       "family": "projects",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "GET",
       "path": "/api/v1/projects/hasVoted",
       "source": "api/v1/routes/projects/interactions/hasVoted.js",
       "family": "projects",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "GET",
       "path": "/api/v1/projects/hasVotedAdmin",
       "source": "api/v1/routes/projects/interactions/hasVotedAdmin.js",
       "family": "projects",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "POST",
