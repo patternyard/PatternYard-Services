@@ -50,7 +50,7 @@
       "path": "/api/v1/misc/getProfanityList",
       "source": "api/v1/routes/misc/getProfanityList.js",
       "family": "misc",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "GET",
@@ -92,7 +92,7 @@
       "path": "/api/v1/misc/setProfanityList",
       "source": "api/v1/routes/misc/setProfanityList.js",
       "family": "misc",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "GET",
