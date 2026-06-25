@@ -568,7 +568,7 @@
       "path": "/api/v1/users/customization/getCustomization",
       "source": "api/v1/routes/users/meta/customization/getCustomization.js",
       "family": "users",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "POST",
@@ -1058,7 +1058,7 @@
       "path": "/api/v1/users/tokenlogin",
       "source": "api/v1/routes/users/login/tokenLogin.js",
       "family": "users",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "GET",
