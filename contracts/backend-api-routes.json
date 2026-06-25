@@ -1,0 +1,1099 @@
+{
+  "generatedFrom": "patternyard-backend",
+  "sourceBranch": "wycats-main",
+  "routeCount": 155,
+  "statuses": [
+    "unimplemented",
+    "parity-tested",
+    "shadowing",
+    "cut-over",
+    "retired"
+  ],
+  "routes": [
+    {
+      "method": "GET",
+      "path": "/",
+      "source": "api/v1/routes/meta/home.js",
+      "family": "meta",
+      "status": "unimplemented"
+    },
+    {
+      "method": "GET",
+      "path": "/:id",
+      "source": "api/v1/routes/projects/projectRedirect.js",
+      "family": "projects",
+      "status": "unimplemented"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/",
+      "source": "api/v1/routes/meta/api.js",
+      "family": "meta",
+      "status": "unimplemented"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/misc/getLastPolicyRead",
+      "source": "api/v1/routes/misc/getLastPolicyRead.js",
+      "family": "misc",
+      "status": "unimplemented"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/misc/getLastPolicyUpdate",
+      "source": "api/v1/routes/misc/getLastPolicyUpdate.js",
+      "family": "misc",
+      "status": "unimplemented"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/misc/getProfanityList",
+      "source": "api/v1/routes/misc/getProfanityList.js",
+      "family": "misc",
+      "status": "unimplemented"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/misc/getStats",
+      "source": "api/v1/routes/misc/getStats.js",
+      "family": "misc",
+      "status": "unimplemented"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/misc/markGuidelinesAsRead",
+      "source": "api/v1/routes/misc/markGuidelinesAsRead.js",
+      "family": "misc",
+      "status": "unimplemented"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/misc/markPrivacyPolicyAsRead",
+      "source": "api/v1/routes/misc/markPrivacyPolicyAsRead.js",
+      "family": "misc",
+      "status": "unimplemented"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/misc/markTOSAsRead",
+      "source": "api/v1/routes/misc/markTOSAsRead.js",
+      "family": "misc",
+      "status": "unimplemented"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/misc/setLastPolicyUpdate",
+      "source": "api/v1/routes/misc/setLastPolicyUpdate.js",
+      "family": "misc",
+      "status": "unimplemented"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/misc/setProfanityList",
+      "source": "api/v1/routes/misc/setProfanityList.js",
+      "family": "misc",
+      "status": "unimplemented"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/ping",
+      "source": "api/v1/routes/meta/pingpong.js",
+      "family": "meta",
+      "status": "unimplemented"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/backupassetget",
+      "source": "api/v1/routes/projects/backupAssetGet.js",
+      "family": "projects",
+      "status": "unimplemented"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/canuploadprojects",
+      "source": "api/v1/routes/projects/canUploadProjects.js",
+      "family": "projects",
+      "status": "unimplemented"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/canviewprojects",
+      "source": "api/v1/routes/projects/canViewProjects.js",
+      "family": "projects",
+      "status": "unimplemented"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/projects/deletemodmessage",
+      "source": "api/v1/routes/projects/modActions/reject/deleteModMessage.js",
+      "family": "projects",
+      "status": "unimplemented"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/projects/deletethumb",
+      "source": "api/v1/routes/projects/modActions/deleteThumb.js",
+      "family": "projects",
+      "status": "unimplemented"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/projects/dispute",
+      "source": "api/v1/routes/projects/modActions/reject/dispute.js",
+      "family": "projects",
+      "status": "unimplemented"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/downloadHardReject",
+      "source": "api/v1/routes/projects/modActions/reject/downloadHardRejected.js",
+      "family": "projects",
+      "status": "unimplemented"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/projects/fixprojectstats",
+      "source": "api/v1/routes/projects/modActions/fixStats.js",
+      "family": "projects",
+      "status": "unimplemented"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/frontpage",
+      "source": "api/v1/routes/projects/search/frontPage.js",
+      "family": "projects",
+      "status": "unimplemented"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/getfeaturedprojects",
+      "source": "api/v1/routes/projects/search/getFeaturedProjects.js",
+      "family": "projects",
+      "status": "unimplemented"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/getLoves",
+      "source": "api/v1/routes/projects/interactions/getLoves.js",
+      "family": "projects",
+      "status": "unimplemented"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/getmyprojects",
+      "source": "api/v1/routes/projects/search/getMyProjects.js",
+      "family": "projects",
+      "status": "unimplemented"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/getproject",
+      "source": "api/v1/routes/projects/getProject.js",
+      "family": "projects",
+      "status": "unimplemented"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/getprojects",
+      "source": "api/v1/routes/projects/getProjects.js",
+      "family": "projects",
+      "status": "unimplemented"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/getprojectsbyauthor",
+      "source": "api/v1/routes/projects/search/getProjectsByAuthor.js",
+      "family": "projects",
+      "status": "unimplemented"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/getprojectwrapper",
+      "source": "api/v1/routes/projects/projectWrapper.js",
+      "family": "projects",
+      "status": "unimplemented"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/getrandomproject",
+      "source": "api/v1/routes/projects/search/getRandom.js",
+      "family": "projects",
+      "status": "unimplemented"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/getremixes",
+      "source": "api/v1/routes/projects/search/getRemixes.js",
+      "family": "projects",
+      "status": "unimplemented"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/getuserstatewrapper",
+      "source": "api/v1/routes/projects/interactions/getUserStateWrapper.js",
+      "family": "projects",
+      "status": "unimplemented"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/getVotes",
+      "source": "api/v1/routes/projects/interactions/getVotes.js",
+      "family": "projects",
+      "status": "unimplemented"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/getWhoLoved",
+      "source": "api/v1/routes/projects/interactions/getWhoLoved.js",
+      "family": "projects",
+      "status": "unimplemented"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/getWhoVoted",
+      "source": "api/v1/routes/projects/interactions/getWhoVoted.js",
+      "family": "projects",
+      "status": "unimplemented"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/projects/hardDeleteProject",
+      "source": "api/v1/routes/projects/modActions/reject/deleteProject.js",
+      "family": "projects",
+      "status": "unimplemented"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/projects/hardreject",
+      "source": "api/v1/routes/projects/modActions/reject/hardRejectProject.js",
+      "family": "projects",
+      "status": "unimplemented"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/hasLoved",
+      "source": "api/v1/routes/projects/interactions/hasLoved.js",
+      "family": "projects",
+      "status": "unimplemented"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/hasLovedAdmin",
+      "source": "api/v1/routes/projects/interactions/hasLovedAdmin.js",
+      "family": "projects",
+      "status": "unimplemented"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/hasVoted",
+      "source": "api/v1/routes/projects/interactions/hasVoted.js",
+      "family": "projects",
+      "status": "unimplemented"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/hasVotedAdmin",
+      "source": "api/v1/routes/projects/interactions/hasVotedAdmin.js",
+      "family": "projects",
+      "status": "unimplemented"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/projects/interactions/loveToggle",
+      "source": "api/v1/routes/projects/interactions/loveToggle.js",
+      "family": "projects",
+      "status": "unimplemented"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/projects/interactions/registerView",
+      "source": "api/v1/routes/projects/interactions/registerView.js",
+      "family": "projects",
+      "status": "unimplemented"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/projects/interactions/showMeLess",
+      "source": "api/v1/routes/projects/interactions/showMeLess.js",
+      "family": "projects",
+      "status": "unimplemented"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/projects/interactions/showMeMore",
+      "source": "api/v1/routes/projects/interactions/showMeMore.js",
+      "family": "projects",
+      "status": "unimplemented"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/projects/interactions/voteToggle",
+      "source": "api/v1/routes/projects/interactions/voteToggle.js",
+      "family": "projects",
+      "status": "unimplemented"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/projects/manualfeature",
+      "source": "api/v1/routes/projects/modActions/manualFeature.js",
+      "family": "projects",
+      "status": "unimplemented"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/projects/modmessage",
+      "source": "api/v1/routes/projects/modActions/reject/modMessage.js",
+      "family": "projects",
+      "status": "unimplemented"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/projects/modresponse",
+      "source": "api/v1/routes/projects/modActions/reject/modResponse.js",
+      "family": "projects",
+      "status": "unimplemented"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/projects/restore",
+      "source": "api/v1/routes/projects/modActions/reject/restore.js",
+      "family": "projects",
+      "status": "unimplemented"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/searchprojects",
+      "source": "api/v1/routes/projects/search/searchProjects.js",
+      "family": "projects",
+      "status": "unimplemented"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects/searchusers",
+      "source": "api/v1/routes/projects/search/searchUsers.js",
+      "family": "projects",
+      "status": "unimplemented"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/projects/setCanBeFeatured",
+      "source": "api/v1/routes/projects/modActions/canBeFeatured.js",
+      "family": "projects",
+      "status": "unimplemented"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/projects/softreject",
+      "source": "api/v1/routes/projects/modActions/reject/softReject.js",
+      "family": "projects",
+      "status": "unimplemented"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/projects/toggleaccountcreation",
+      "source": "api/v1/routes/projects/modActions/toggleAccountCreation.js",
+      "family": "projects",
+      "status": "unimplemented"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/projects/toggleuploading",
+      "source": "api/v1/routes/projects/modActions/toggleUploading.js",
+      "family": "projects",
+      "status": "unimplemented"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/projects/toggleviewing",
+      "source": "api/v1/routes/projects/modActions/toggleViewing.js",
+      "family": "projects",
+      "status": "unimplemented"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/projects/updateProject",
+      "source": "api/v1/routes/projects/updateProject.js",
+      "family": "projects",
+      "status": "unimplemented"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/projects/uploadProject",
+      "source": "api/v1/routes/projects/uploadProject.js",
+      "family": "projects",
+      "status": "unimplemented"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/reports/deleteReport",
+      "source": "api/v1/routes/misc/reports/deleteReport.js",
+      "family": "misc",
+      "status": "unimplemented"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/reports/getReports",
+      "source": "api/v1/routes/misc/reports/getReports.js",
+      "family": "misc",
+      "status": "unimplemented"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/reports/getReportsByTarget",
+      "source": "api/v1/routes/misc/reports/getReportsByTarget.js",
+      "family": "misc",
+      "status": "unimplemented"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/reports/sendReport",
+      "source": "api/v1/routes/misc/reports/sendReport.js",
+      "family": "misc",
+      "status": "unimplemented"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/resetpassword/verifyemail",
+      "source": "api/v1/routes/users/login/resetpassword/verifyEmail.js",
+      "family": "users",
+      "status": "unimplemented"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/robots.txt",
+      "source": "api/v1/routes/meta/robots.js",
+      "family": "meta",
+      "status": "unimplemented"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/users/addoauthmethod",
+      "source": "api/v1/routes/users/oauth/addMethod/addOAuthMethod.js",
+      "family": "users",
+      "status": "unimplemented"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/users/addpasswordtooauth",
+      "source": "api/v1/routes/users/oauth/addPassword/addPassword.js",
+      "family": "users",
+      "status": "unimplemented"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/users/addscratchlogin",
+      "source": "api/v1/routes/users/oauth/addMethod/scratchCallback.js",
+      "family": "users",
+      "status": "unimplemented"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/users/assignPossition",
+      "source": "api/v1/routes/users/mod/admin_only/assignPossition.js",
+      "family": "users",
+      "status": "unimplemented"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/users/ban",
+      "source": "api/v1/routes/users/mod/ban.js",
+      "family": "users",
+      "status": "unimplemented"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/users/banip",
+      "source": "api/v1/routes/users/mod/admin_only/banIP.js",
+      "family": "users",
+      "status": "unimplemented"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/users/banuserip",
+      "source": "api/v1/routes/users/mod/admin_only/banUserIP.js",
+      "family": "users",
+      "status": "unimplemented"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/users/blockuser",
+      "source": "api/v1/routes/users/blockUser.js",
+      "family": "users",
+      "status": "unimplemented"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/users/changePassword",
+      "source": "api/v1/routes/users/login/changePassword.js",
+      "family": "users",
+      "status": "unimplemented"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/users/changeprojectid",
+      "source": "api/v1/routes/users/mod/admin_only/changeProjectID.js",
+      "family": "users",
+      "status": "unimplemented"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/users/changeUsername",
+      "source": "api/v1/routes/users/meta/changeUsername.js",
+      "family": "users",
+      "status": "unimplemented"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/users/changeusernameadmin",
+      "source": "api/v1/routes/users/mod/setUsername.js",
+      "family": "users",
+      "status": "unimplemented"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/users/createAccount",
+      "source": "api/v1/routes/users/login/createAccount.js",
+      "family": "users",
+      "status": "unimplemented"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/users/createoauthaccount",
+      "source": "api/v1/routes/users/oauth/createAccount/createOAuthAccount.js",
+      "family": "users",
+      "status": "unimplemented"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/users/customization/getCustomization",
+      "source": "api/v1/routes/users/meta/customization/getCustomization.js",
+      "family": "users",
+      "status": "unimplemented"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/users/customization/setCustomization",
+      "source": "api/v1/routes/users/meta/customization/setCustomization.js",
+      "family": "users",
+      "status": "unimplemented"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/users/customization/setCustomizationDisabled",
+      "source": "api/v1/routes/users/meta/customization/setCustomizationDisabled.js",
+      "family": "users",
+      "status": "unimplemented"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/users/deleteaccount",
+      "source": "api/v1/routes/users/mod/admin_only/deleteAccount.js",
+      "family": "users",
+      "status": "unimplemented"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/users/deleteallemails",
+      "source": "api/v1/routes/users/mod/admin_only/deleteEmails.js",
+      "family": "users",
+      "status": "unimplemented"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/users/filloutSafetyDetails",
+      "source": "api/v1/routes/users/login/filloutSafetyDetails.js",
+      "family": "users",
+      "status": "unimplemented"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/users/follow",
+      "source": "api/v1/routes/users/meta/following/follow.js",
+      "family": "users",
+      "status": "unimplemented"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/users/getadmins",
+      "source": "api/v1/routes/users/mod/admin_only/getadmins.js",
+      "family": "users",
+      "status": "unimplemented"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/users/getAllAccountsWithIP",
+      "source": "api/v1/routes/users/mod/admin_only/getAllAccountsWithIP.js",
+      "family": "users",
+      "status": "unimplemented"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/users/getAllIPs",
+      "source": "api/v1/routes/users/mod/admin_only/getAllIPs.js",
+      "family": "users",
+      "status": "unimplemented"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/users/getAlts",
+      "source": "api/v1/routes/users/mod/getAlts.js",
+      "family": "users",
+      "status": "unimplemented"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/users/getBadges",
+      "source": "api/v1/routes/users/meta/getBadges.js",
+      "family": "users",
+      "status": "unimplemented"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/users/getemail",
+      "source": "api/v1/routes/users/mod/admin_only/getEmail.js",
+      "family": "users",
+      "status": "unimplemented"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/users/getid",
+      "source": "api/v1/routes/users/meta/getid.js",
+      "family": "users",
+      "status": "unimplemented"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/users/getmessagecount",
+      "source": "api/v1/routes/users/messages/getMessageCount.js",
+      "family": "users",
+      "status": "unimplemented"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/users/getmessages",
+      "source": "api/v1/routes/users/messages/getMessages.js",
+      "family": "users",
+      "status": "unimplemented"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/users/getmods",
+      "source": "api/v1/routes/users/mod/admin_only/getmods.js",
+      "family": "users",
+      "status": "unimplemented"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/users/getmyfeed",
+      "source": "api/v1/routes/users/getMyFeed.js",
+      "family": "users",
+      "status": "unimplemented"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/users/getpfp",
+      "source": "api/v1/routes/users/getPFP.js",
+      "family": "users",
+      "status": "unimplemented"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/users/getprojectcountofuser",
+      "source": "api/v1/routes/users/meta/getProjectCountOfUser.js",
+      "family": "users",
+      "status": "unimplemented"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/users/getunreadmessagecount",
+      "source": "api/v1/routes/users/messages/getUnreadMessageCount.js",
+      "family": "users",
+      "status": "unimplemented"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/users/getunreadmessages",
+      "source": "api/v1/routes/users/messages/getUnreadMessages.js",
+      "family": "users",
+      "status": "unimplemented"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/users/getusername",
+      "source": "api/v1/routes/users/meta/getusername.js",
+      "family": "users",
+      "status": "unimplemented"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/users/getuserstats",
+      "source": "api/v1/routes/users/mod/admin_only/getUserStats.js",
+      "family": "users",
+      "status": "unimplemented"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/users/getworstoffenders",
+      "source": "api/v1/routes/users/mod/admin_only/getperformancemongostuff.js",
+      "family": "users",
+      "status": "unimplemented"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/users/githubcallback/addmethod",
+      "source": "api/v1/routes/users/oauth/addMethod/githubCallback.js",
+      "family": "users",
+      "status": "unimplemented"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/users/githubcallback/addpassword",
+      "source": "api/v1/routes/users/oauth/addPassword/githubCallbackIntermediate.js",
+      "family": "users",
+      "status": "unimplemented"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/users/githubcallback/addpasswordfinal",
+      "source": "api/v1/routes/users/oauth/addPassword/githubCallbackFinal.js",
+      "family": "users",
+      "status": "unimplemented"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/users/githubcallback/createaccount",
+      "source": "api/v1/routes/users/oauth/createAccount/githubCallback.js",
+      "family": "users",
+      "status": "unimplemented"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/users/githubcallback/login",
+      "source": "api/v1/routes/users/oauth/login/githubCallback.js",
+      "family": "users",
+      "status": "unimplemented"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/users/googlecallback/addmethod",
+      "source": "api/v1/routes/users/oauth/addMethod/googleCallback.js",
+      "family": "users",
+      "status": "unimplemented"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/users/googlecallback/addpassword",
+      "source": "api/v1/routes/users/oauth/addPassword/googleCallbackIntermediate.js",
+      "family": "users",
+      "status": "unimplemented"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/users/googlecallback/addpasswordfinal",
+      "source": "api/v1/routes/users/oauth/addPassword/googleCallbackFinal.js",
+      "family": "users",
+      "status": "unimplemented"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/users/googlecallback/createaccount",
+      "source": "api/v1/routes/users/oauth/createAccount/googleCallback.js",
+      "family": "users",
+      "status": "unimplemented"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/users/googlecallback/login",
+      "source": "api/v1/routes/users/oauth/login/googleCallback.js",
+      "family": "users",
+      "status": "unimplemented"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/users/hasblocked",
+      "source": "api/v1/routes/users/hasBlocked.js",
+      "family": "users",
+      "status": "unimplemented"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/users/isadmin",
+      "source": "api/v1/routes/users/mod/admin_only/isAdmin.js",
+      "family": "users",
+      "status": "unimplemented"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/users/isBanned",
+      "source": "api/v1/routes/users/meta/isBanned.js",
+      "family": "users",
+      "status": "unimplemented"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/users/isfollowing",
+      "source": "api/v1/routes/users/meta/following/isFollowing.js",
+      "family": "users",
+      "status": "unimplemented"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/users/ismod",
+      "source": "api/v1/routes/users/mod/admin_only/isMod.js",
+      "family": "users",
+      "status": "unimplemented"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/users/loginoauthaccount",
+      "source": "api/v1/routes/users/oauth/login/loginOAuthAccount.js",
+      "family": "users",
+      "status": "unimplemented"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/users/logout",
+      "source": "api/v1/routes/users/login/logout.js",
+      "family": "users",
+      "status": "unimplemented"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/users/markallmessagesasread",
+      "source": "api/v1/routes/users/messages/markAllMessagesAsRead.js",
+      "family": "users",
+      "status": "unimplemented"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/users/markmessageasread",
+      "source": "api/v1/routes/users/messages/markMessageAsRead.js",
+      "family": "users",
+      "status": "unimplemented"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/users/massbanregex",
+      "source": "api/v1/routes/users/mod/admin_only/massBan.js",
+      "family": "users",
+      "status": "unimplemented"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/users/meta/getfollowercount",
+      "source": "api/v1/routes/users/meta/following/getFollowerCount.js",
+      "family": "users",
+      "status": "unimplemented"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/users/meta/getfollowers",
+      "source": "api/v1/routes/users/meta/following/getFollowers.js",
+      "family": "users",
+      "status": "unimplemented"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/users/passwordLogin",
+      "source": "api/v1/routes/users/login/passwordLogin.js",
+      "family": "users",
+      "status": "unimplemented"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/users/privateProfile",
+      "source": "api/v1/routes/users/meta/privateProfile.js",
+      "family": "users",
+      "status": "unimplemented"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/users/profile",
+      "source": "api/v1/routes/users/profile.js",
+      "family": "users",
+      "status": "unimplemented"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/users/putonwatchlist",
+      "source": "api/v1/routes/users/mod/putOnWatchlist.js",
+      "family": "users",
+      "status": "unimplemented"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/users/removeoauthmethod",
+      "source": "api/v1/routes/users/oauth/removeMethod/removeOAuthMethod.js",
+      "family": "users",
+      "status": "unimplemented"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/users/requestrankup",
+      "source": "api/v1/routes/users/requestRankUp.js",
+      "family": "users",
+      "status": "unimplemented"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/users/resetpassword/reset",
+      "source": "api/v1/routes/users/login/resetpassword/reset.js",
+      "family": "users",
+      "status": "unimplemented"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/users/resetpassword/sendEmail",
+      "source": "api/v1/routes/users/login/resetpassword/sendEmail.js",
+      "family": "users",
+      "status": "unimplemented"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/users/resetpassword/sendVerifyEmail",
+      "source": "api/v1/routes/users/login/resetpassword/sendVerificationEmail.js",
+      "family": "users",
+      "status": "unimplemented"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/users/scratchaddpassword",
+      "source": "api/v1/routes/users/oauth/addPassword/scratchCallbackIntermediate.js",
+      "family": "users",
+      "status": "unimplemented"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/users/scratchaddpasswordfinal",
+      "source": "api/v1/routes/users/oauth/addPassword/scratchCallbackFinal.js",
+      "family": "users",
+      "status": "unimplemented"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/users/scratchoauthcreate",
+      "source": "api/v1/routes/users/oauth/createAccount/scratchCallback.js",
+      "family": "users",
+      "status": "unimplemented"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/users/scratchoauthlogin",
+      "source": "api/v1/routes/users/oauth/login/scratchCallback.js",
+      "family": "users",
+      "status": "unimplemented"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/users/sendloginsuccess",
+      "source": "api/v1/routes/users/oauth/sendLoginSuccess.js",
+      "family": "users",
+      "status": "unimplemented"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/users/setBadges",
+      "source": "api/v1/routes/users/mod/admin_only/setBadges.js",
+      "family": "users",
+      "status": "unimplemented"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/users/setbadgesmultiple",
+      "source": "api/v1/routes/users/mod/admin_only/changeBadgesMultiple.js",
+      "family": "users",
+      "status": "unimplemented"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/users/setBio",
+      "source": "api/v1/routes/users/meta/setBio.js",
+      "family": "users",
+      "status": "unimplemented"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/users/setbioadmin",
+      "source": "api/v1/routes/users/mod/setBioAdmin.js",
+      "family": "users",
+      "status": "unimplemented"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/users/setEmail",
+      "source": "api/v1/routes/users/setEmail.js",
+      "family": "users",
+      "status": "unimplemented"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/users/setmyfeaturedproject",
+      "source": "api/v1/routes/users/meta/setMyFeaturedProject.js",
+      "family": "users",
+      "status": "unimplemented"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/users/setmyfeaturedprojectadmin",
+      "source": "api/v1/routes/users/mod/setFeaturedProjectAdmin.js",
+      "family": "users",
+      "status": "unimplemented"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/users/setpfp",
+      "source": "api/v1/routes/users/meta/setPFP.js",
+      "family": "users",
+      "status": "unimplemented"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/users/setpfpadmin",
+      "source": "api/v1/routes/users/mod/setPFP.js",
+      "family": "users",
+      "status": "unimplemented"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/users/tokenlogin",
+      "source": "api/v1/routes/users/login/tokenLogin.js",
+      "family": "users",
+      "status": "unimplemented"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/users/userexists",
+      "source": "api/v1/routes/users/userExists.js",
+      "family": "users",
+      "status": "unimplemented"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/users/userfromcode",
+      "source": "api/v1/routes/users/userFromCode.js",
+      "family": "users",
+      "status": "unimplemented"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/users/verifyfollowers",
+      "source": "api/v1/routes/users/mod/admin_only/verifyFollowers.js",
+      "family": "users",
+      "status": "unimplemented"
+    },
+    {
+      "method": "GET",
+      "path": "/file/penguinmod-warm-tier-s2-cf/:asset_name",
+      "source": "api/v1/routes/projects/warmTierAssetGet.js",
+      "family": "projects",
+      "status": "unimplemented"
+    },
+    {
+      "method": "GET",
+      "path": "/robots.txt",
+      "source": "api/v1/routes/meta/robots.js",
+      "family": "meta",
+      "status": "unimplemented"
+    }
+  ]
+}
