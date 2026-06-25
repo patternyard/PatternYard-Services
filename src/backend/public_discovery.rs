@@ -83,14 +83,30 @@ async fn get_stats(State(database): State<Database>) -> Response {
     };
 
     match sqlx::query_as::<_, PublicStats>(
-        "SELECT \
-            (SELECT count(*) FROM app.users WHERE NOT permanently_banned) AS user_count, \
-            (SELECT count(*) FROM app.users WHERE permanently_banned OR unban_at > now()) AS banned_count, \
-            (SELECT count(*) FROM app.projects) AS project_count, \
-            (SELECT count(*) FROM app.projects WHERE remix_of_id IS NOT NULL) AS remix_count, \
-            (SELECT count(*) FROM app.projects WHERE featured) AS featured_count, \
-            (SELECT COALESCE(sum(views), 0) FROM app.projects) AS total_views",
+        "WITH user_totals AS (\
+             SELECT \
+                 count(*) FILTER (WHERE NOT permanently_banned) AS user_count, \
+                 count(*) FILTER (WHERE permanently_banned OR unban_at > now()) AS banned_count, \
+                 count(*) FILTER (WHERE email IS NOT NULL) AS email_count \
+             FROM app.users\
+         ), project_groups AS MATERIALIZED (\
+             SELECT status, private, count(*) AS total \
+             FROM app.projects \
+             GROUP BY status, private\
+         ), project_totals AS (\
+             SELECT \
+                 COALESCE(sum(total), 0)::bigint AS project_count, \
+                 COALESCE(sum(total) FILTER (WHERE private), 0)::bigint AS private_project_count, \
+                 (SELECT COALESCE(jsonb_object_agg(status, total), '{}'::jsonb) \
+                  FROM (SELECT status, sum(total) AS total FROM project_groups GROUP BY status) counts) \
+                     AS project_status_counts \
+             FROM project_groups\
+         ) \
+         SELECT user_count, banned_count, project_count, private_project_count, email_count, \
+                project_status_counts \
+         FROM user_totals CROSS JOIN project_totals",
     )
+
     .fetch_one(pool)
     .await
     {
@@ -105,17 +121,12 @@ async fn get_last_policy_update(State(database): State<Database>) -> Response {
     };
 
     match sqlx::query_scalar::<_, Value>(
-        "SELECT COALESCE(\
-            jsonb_object_agg(\
-                CASE policy \
-                    WHEN 'privacy' THEN 'privacyPolicy' \
-                    WHEN 'terms' THEN 'TOS' \
-                    ELSE policy \
-                END,\
-                floor(extract(epoch FROM published_at) * 1000)::bigint\
-            ),\
-            '{}'::jsonb\
-        ) FROM app.policy_versions",
+        "SELECT COALESCE(jsonb_object_agg(policy, published_at), '{}'::jsonb) \
+         FROM (\
+             SELECT policy, max(published_at) AS published_at \
+             FROM app.policy_versions \
+             GROUP BY policy\
+         ) latest_versions",
     )
     .fetch_one(pool)
     .await
