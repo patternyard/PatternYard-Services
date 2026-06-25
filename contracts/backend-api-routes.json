@@ -645,7 +645,7 @@
       "path": "/api/v1/users/getBadges",
       "source": "api/v1/routes/users/meta/getBadges.js",
       "family": "users",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "GET",
@@ -659,7 +659,7 @@
       "path": "/api/v1/users/getid",
       "source": "api/v1/routes/users/meta/getid.js",
       "family": "users",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "GET",
@@ -701,7 +701,7 @@
       "path": "/api/v1/users/getprojectcountofuser",
       "source": "api/v1/routes/users/meta/getProjectCountOfUser.js",
       "family": "users",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "GET",
@@ -722,7 +722,7 @@
       "path": "/api/v1/users/getusername",
       "source": "api/v1/routes/users/meta/getusername.js",
       "family": "users",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "GET",
@@ -883,7 +883,7 @@
       "path": "/api/v1/users/meta/getfollowercount",
       "source": "api/v1/routes/users/meta/following/getFollowerCount.js",
       "family": "users",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "GET",
@@ -1065,7 +1065,7 @@
       "path": "/api/v1/users/userexists",
       "source": "api/v1/routes/users/userExists.js",
       "family": "users",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "GET",
