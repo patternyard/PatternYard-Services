@@ -9,6 +9,7 @@ use serde::Serialize;
 
 mod public_projects;
 mod public_state;
+mod public_users;
 
 #[derive(Serialize)]
 struct ApiMetadata<'a> {
@@ -69,6 +70,7 @@ pub(crate) fn router_with_database(database: Database) -> Router {
         .route("/robots.txt", get(robots))
         .merge(public_projects::router())
         .merge(public_state::router())
+        .merge(public_users::router())
         .with_state(database)
 }
 
