@@ -69,9 +69,10 @@ async fn user_exists(
     State(database): State<Database>,
     Query(query): Query<UsernameQuery>,
 ) -> Response {
-    let Some(username) = required(query.username, "Missing username") else {
+    let username = legacy_username(query.username);
+    if username.is_empty() {
         return api_error(StatusCode::BAD_REQUEST, "Missing username");
-    };
+    }
     let Some(pool) = database.pool() else {
         return database_unavailable();
     };
@@ -88,13 +89,11 @@ async fn user_exists(
     }
 }
 
-async fn get_id(
-    State(database): State<Database>,
-    Query(query): Query<UsernameQuery>,
-) -> Response {
-    let Some(username) = required(query.username, "Missing username") else {
+async fn get_id(State(database): State<Database>, Query(query): Query<UsernameQuery>) -> Response {
+    let username = legacy_username(query.username);
+    if username.is_empty() {
         return api_error(StatusCode::BAD_REQUEST, "Missing username");
-    };
+    }
     let Some(pool) = database.pool() else {
         return database_unavailable();
     };
@@ -110,13 +109,11 @@ async fn get_id(
     }
 }
 
-async fn get_username(
-    State(database): State<Database>,
-    Query(query): Query<IdQuery>,
-) -> Response {
-    let Some(id) = required(query.id, "Missing ID") else {
+async fn get_username(State(database): State<Database>, Query(query): Query<IdQuery>) -> Response {
+    let id = legacy_string(query.id);
+    if id.is_empty() {
         return api_error(StatusCode::BAD_REQUEST, "Missing ID");
-    };
+    }
     let Some(pool) = database.pool() else {
         return database_unavailable();
     };
@@ -136,19 +133,18 @@ async fn get_badges(
     State(database): State<Database>,
     Query(query): Query<UsernameQuery>,
 ) -> Response {
-    let Some(username) = required(query.username, "Missing username") else {
+    let username = legacy_username(query.username);
+    if username.is_empty() {
         return api_error(StatusCode::BAD_REQUEST, "Missing username");
-    };
+    }
     let Some(pool) = database.pool() else {
         return database_unavailable();
     };
 
-    match sqlx::query_scalar::<_, Vec<String>>(
-        "SELECT badges FROM app.users WHERE username = $1",
-    )
-    .bind(username)
-    .fetch_optional(pool)
-    .await
+    match sqlx::query_scalar::<_, Vec<String>>("SELECT badges FROM app.users WHERE username = $1")
+        .bind(username)
+        .fetch_optional(pool)
+        .await
     {
         Ok(Some(badges)) => Json(BadgesResponse { badges }).into_response(),
         Ok(None) => api_error(StatusCode::NOT_FOUND, "NotFound"),
@@ -160,19 +156,18 @@ async fn get_follower_count(
     State(database): State<Database>,
     Query(query): Query<UsernameQuery>,
 ) -> Response {
-    let Some(username) = required(query.username, "Missing username") else {
+    let username = legacy_username(query.username);
+    if username.is_empty() {
         return api_error(StatusCode::BAD_REQUEST, "Missing username");
-    };
+    }
     let Some(pool) = database.pool() else {
         return database_unavailable();
     };
 
-    match sqlx::query_scalar::<_, i32>(
-        "SELECT follower_count FROM app.users WHERE username = $1",
-    )
-    .bind(username)
-    .fetch_optional(pool)
-    .await
+    match sqlx::query_scalar::<_, i32>("SELECT follower_count FROM app.users WHERE username = $1")
+        .bind(username)
+        .fetch_optional(pool)
+        .await
     {
         Ok(count) => Json(CountResponse {
             count: count.map(i64::from),
@@ -186,9 +181,10 @@ async fn get_project_count(
     State(database): State<Database>,
     Json(body): Json<ProjectCountBody>,
 ) -> Response {
-    let Some(target) = required(body.target, "Missing target") else {
+    let target = legacy_username(body.target);
+    if target.is_empty() {
         return api_error(StatusCode::BAD_REQUEST, "Missing target");
-    };
+    }
     let Some(pool) = database.pool() else {
         return database_unavailable();
     };
@@ -206,10 +202,12 @@ async fn get_project_count(
     }
 }
 
-fn required(value: Option<String>, _error: &'static str) -> Option<String> {
-    value
-        .map(|value| value.to_lowercase())
-        .filter(|value| !value.is_empty() && value != "undefined")
+fn legacy_string(value: Option<String>) -> String {
+    value.unwrap_or_else(|| "undefined".to_owned())
+}
+
+fn legacy_username(value: Option<String>) -> String {
+    legacy_string(value).to_lowercase()
 }
 
 fn database_unavailable() -> Response {
@@ -230,10 +228,14 @@ mod tests {
     use super::*;
 
     #[test]
-    fn normalizes_usernames_but_not_empty_values() {
-        assert_eq!(required(Some("NewUser".into()), "ignored"), Some("newuser".into()));
-        assert_eq!(required(Some("undefined".into()), "ignored"), None);
-        assert_eq!(required(None, "ignored"), None);
+    fn matches_legacy_string_coercion() {
+        assert_eq!(legacy_username(Some("NewUser".into())), "newuser");
+        assert_eq!(legacy_username(None), "undefined");
+        assert_eq!(
+            legacy_string(Some("CaseSensitiveID".into())),
+            "CaseSensitiveID"
+        );
+        assert_eq!(legacy_string(None), "undefined");
     }
 
     #[test]
