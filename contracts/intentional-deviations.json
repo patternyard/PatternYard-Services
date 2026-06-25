@@ -1,0 +1,18 @@
+{
+  "deviations": [
+    {
+      "method": "GET",
+      "path": "/",
+      "legacy": "Redirected to https://penguinmod.com in the deployed Express service.",
+      "replacement": "Redirect to https://patternyard.dev.",
+      "reason": "PatternYard must have no upstream runtime dependency."
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/",
+      "legacy": "The repository defines the metadata response, but the current production deployment returns a Vercel 404.",
+      "replacement": "Restore the repository-defined metadata response with the current PatternYard git revision.",
+      "reason": "Restore the intended API contract instead of preserving a deployment defect."
+    }
+  ]
+}
