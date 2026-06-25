@@ -428,7 +428,7 @@
       "path": "/api/v1/reports/deleteReport",
       "source": "api/v1/routes/misc/reports/deleteReport.js",
       "family": "misc",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "GET",
@@ -449,7 +449,7 @@
       "path": "/api/v1/reports/sendReport",
       "source": "api/v1/routes/misc/reports/sendReport.js",
       "family": "misc",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "GET",
