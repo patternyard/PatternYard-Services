@@ -12,10 +12,10 @@
   "routes": [
     {
       "method": "GET",
-  "path": "/",
-  "source": "api/v1/routes/meta/home.js",
-  "family": "meta",
-  "status": "parity-tested"
+      "path": "/",
+      "source": "api/v1/routes/meta/home.js",
+      "family": "meta",
+      "status": "parity-tested"
     },
     {
       "method": "GET",
@@ -26,10 +26,10 @@
     },
     {
       "method": "GET",
-  "path": "/api/v1/",
-  "source": "api/v1/routes/meta/api.js",
-  "family": "meta",
-  "status": "parity-tested"
+      "path": "/api/v1/",
+      "source": "api/v1/routes/meta/api.js",
+      "family": "meta",
+      "status": "parity-tested"
     },
     {
       "method": "GET",
@@ -96,10 +96,10 @@
     },
     {
       "method": "GET",
-  "path": "/api/v1/ping",
-  "source": "api/v1/routes/meta/pingpong.js",
-  "family": "meta",
-  "status": "parity-tested"
+      "path": "/api/v1/ping",
+      "source": "api/v1/routes/meta/pingpong.js",
+      "family": "meta",
+      "status": "parity-tested"
     },
     {
       "method": "GET",
@@ -460,10 +460,10 @@
     },
     {
       "method": "GET",
-  "path": "/api/v1/robots.txt",
-  "source": "api/v1/routes/meta/robots.js",
-  "family": "meta",
-  "status": "parity-tested"
+      "path": "/api/v1/robots.txt",
+      "source": "api/v1/routes/meta/robots.js",
+      "family": "meta",
+      "status": "parity-tested"
     },
     {
       "method": "GET",
@@ -1090,10 +1090,10 @@
     },
     {
       "method": "GET",
-  "path": "/robots.txt",
-  "source": "api/v1/routes/meta/robots.js",
-  "family": "meta",
-  "status": "parity-tested"
+      "path": "/robots.txt",
+      "source": "api/v1/routes/meta/robots.js",
+      "family": "meta",
+      "status": "parity-tested"
     }
   ]
 }

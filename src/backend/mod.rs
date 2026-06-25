@@ -52,8 +52,10 @@ struct Readiness {
 }
 
 pub fn router() -> Router {
-    let database = Database::from_env();
+    router_with_database(Database::from_env())
+}
 
+pub(crate) fn router_with_database(database: Database) -> Router {
     Router::new()
         .route("/", get(home))
         .route("/api/v1", get(metadata))
