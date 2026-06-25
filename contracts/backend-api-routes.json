@@ -162,7 +162,7 @@
       "path": "/api/v1/projects/frontpage",
       "source": "api/v1/routes/projects/search/frontPage.js",
       "family": "projects",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "GET",
