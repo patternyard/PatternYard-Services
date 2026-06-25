@@ -8,6 +8,7 @@ use axum::routing::get;
 use serde::Serialize;
 
 mod account_reads;
+mod message_reads;
 mod moderation_lists;
 mod policy_state;
 mod project_interactions;
@@ -77,6 +78,7 @@ pub(crate) fn router_with_database(database: Database) -> Router {
         .route("/api/v1/robots.txt", get(robots))
         .route("/robots.txt", get(robots))
         .merge(account_reads::router())
+        .merge(message_reads::router())
         .merge(moderation_lists::router())
         .merge(policy_state::router())
         .merge(project_interactions::router())

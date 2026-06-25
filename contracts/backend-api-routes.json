@@ -666,7 +666,7 @@
       "path": "/api/v1/users/getmessagecount",
       "source": "api/v1/routes/users/messages/getMessageCount.js",
       "family": "users",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "GET",
@@ -708,14 +708,14 @@
       "path": "/api/v1/users/getunreadmessagecount",
       "source": "api/v1/routes/users/messages/getUnreadMessageCount.js",
       "family": "users",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "GET",
       "path": "/api/v1/users/getunreadmessages",
       "source": "api/v1/routes/users/messages/getUnreadMessages.js",
       "family": "users",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "GET",
