@@ -19,6 +19,8 @@ struct ProfileWriteBody {
     toggle: Option<Value>,
     project: Option<Value>,
     title: Option<Value>,
+    private_profile: Option<Value>,
+    private_to_following: Option<Value>,
 }
 
 #[derive(Serialize)]
@@ -46,6 +48,7 @@ pub fn router() -> Router<Database> {
             "/api/v1/users/setmyfeaturedproject",
             post(set_featured_project),
         )
+        .route("/api/v1/users/privateProfile", post(set_profile_privacy))
 }
 
 async fn set_bio(State(database): State<Database>, Json(body): Json<ProfileWriteBody>) -> Response {
@@ -170,6 +173,37 @@ async fn set_customization_disabled(
     )
     .bind(target_id)
     .bind(!is_enabled)
+    .execute(pool)
+    .await
+    {
+        Ok(_) => success(),
+        Err(error) => query_failed(error),
+    }
+}
+
+async fn set_profile_privacy(
+    State(database): State<Database>,
+    Json(body): Json<ProfileWriteBody>,
+) -> Response {
+    let token = legacy_json_string(body.token);
+    let private_profile = legacy_json_bool(body.private_profile);
+    let private_to_following = legacy_json_bool(body.private_to_following);
+    let Some(pool) = database.pool() else {
+        return database_unavailable();
+    };
+    let user = match authenticate(pool, &token, StatusCode::BAD_REQUEST).await {
+        Ok(user) => user,
+        Err(response) => return response,
+    };
+
+    match sqlx::query(
+        "UPDATE app.users \
+         SET private_profile = $1, allow_following_view = $2 \
+         WHERE id = $3",
+    )
+    .bind(private_profile)
+    .bind(private_to_following)
+    .bind(user.id)
     .execute(pool)
     .await
     {
@@ -326,5 +360,12 @@ mod tests {
     fn featured_title_range_is_inclusive() {
         assert!((0.0..=500.0).contains(&0.0));
         assert!((0.0..=500.0).contains(&500.0));
+    }
+
+    #[test]
+    fn privacy_flags_match_legacy_string_coercion() {
+        assert!(legacy_json_bool(Some(json!(true))));
+        assert!(legacy_json_bool(Some(json!("true"))));
+        assert!(!legacy_json_bool(Some(json!(1))));
     }
 }
