@@ -21,6 +21,8 @@ struct ProfileWriteBody {
     title: Option<Value>,
     private_profile: Option<Value>,
     private_to_following: Option<Value>,
+    new_username: Option<Value>,
+    email: Option<Value>,
 }
 
 #[derive(Serialize)]
@@ -56,6 +58,8 @@ pub fn router() -> Router<Database> {
         )
         .route("/api/v1/users/privateProfile", post(set_profile_privacy))
         .route("/api/v1/users/requestrankup", post(request_rank_up))
+        .route("/api/v1/users/changeUsername", post(change_username))
+        .route("/api/v1/users/setEmail", post(set_email))
 }
 
 async fn set_bio(State(database): State<Database>, Json(body): Json<ProfileWriteBody>) -> Response {
@@ -219,6 +223,112 @@ async fn set_profile_privacy(
     }
 }
 
+async fn change_username(
+    State(database): State<Database>,
+    Json(body): Json<ProfileWriteBody>,
+) -> Response {
+    let token = legacy_json_string(body.token);
+    let display_username = legacy_json_string(body.new_username);
+    let username = display_username.to_lowercase();
+    if !(3..=20).contains(&username.len()) {
+        return api_error(StatusCode::BAD_REQUEST, "InvalidLengthUsername");
+    }
+    if !username
+        .chars()
+        .all(|character| character.is_ascii_alphanumeric() || matches!(character, '-' | '_'))
+    {
+        return api_error(StatusCode::BAD_REQUEST, "InvalidUsername");
+    }
+    let Some(pool) = database.pool() else {
+        return database_unavailable();
+    };
+    let user = match authenticate(pool, &token, StatusCode::BAD_REQUEST).await {
+        Ok(user) => user,
+        Err(response) => return response,
+    };
+    match contains_illegal_wording(pool, &username).await {
+        Ok(true) => return api_error(StatusCode::BAD_REQUEST, "IllegalWordsUsed"),
+        Err(error) => return query_failed(error),
+        Ok(false) => {}
+    }
+    match sqlx::query_scalar::<_, bool>(
+        "SELECT EXISTS(SELECT 1 FROM app.users WHERE username = $1)",
+    )
+    .bind(&username)
+    .fetch_one(pool)
+    .await
+    {
+        Ok(true) => return api_error(StatusCode::NOT_FOUND, "UsernameTaken"),
+        Err(error) => return query_failed(error),
+        Ok(false) => {}
+    }
+
+    match sqlx::query(
+        "UPDATE app.users SET username = $1, display_username = $2, updated_at = now() \
+         WHERE id = $3",
+    )
+    .bind(username)
+    .bind(display_username)
+    .bind(user.id)
+    .execute(pool)
+    .await
+    {
+        Ok(_) => success(),
+        Err(error) => query_failed(error),
+    }
+}
+
+async fn set_email(
+    State(database): State<Database>,
+    Json(body): Json<ProfileWriteBody>,
+) -> Response {
+    let token = legacy_json_string(body.token);
+    let email = legacy_json_string(body.email).to_lowercase();
+    if !valid_email(&email) {
+        return api_error(StatusCode::BAD_REQUEST, "InvalidEmail");
+    }
+    let Some(pool) = database.pool() else {
+        return database_unavailable();
+    };
+    let user = match authenticate(pool, &token, StatusCode::BAD_REQUEST).await {
+        Ok(user) => user,
+        Err(response) => return response,
+    };
+    let mut transaction = match pool.begin().await {
+        Ok(transaction) => transaction,
+        Err(error) => return query_failed(error),
+    };
+    if let Err(error) = sqlx::query(
+        "INSERT INTO app.user_private_details (user_id, email, updated_at) \
+         VALUES ($1, $2, now()) \
+         ON CONFLICT (user_id) DO UPDATE SET email = EXCLUDED.email, updated_at = now()",
+    )
+    .bind(&user.id)
+    .bind(email)
+    .execute(&mut *transaction)
+    .await
+    {
+        return if is_unique_violation(&error) {
+            api_error(StatusCode::BAD_REQUEST, "EmailAlreadyInUse")
+        } else {
+            query_failed(error)
+        };
+    }
+    if let Err(error) =
+        sqlx::query("UPDATE app.users SET email_verified = false, updated_at = now() WHERE id = $1")
+            .bind(user.id)
+            .execute(&mut *transaction)
+            .await
+    {
+        return query_failed(error);
+    }
+
+    match transaction.commit().await {
+        Ok(()) => success(),
+        Err(error) => query_failed(error),
+    }
+}
+
 async fn request_rank_up(
     State(database): State<Database>,
     Json(body): Json<ProfileWriteBody>,
@@ -367,6 +477,26 @@ fn legacy_json_bool(value: Option<Value>) -> bool {
     legacy_json_string(value) == "true"
 }
 
+fn valid_email(email: &str) -> bool {
+    let Some((local, domain)) = email.split_once('@') else {
+        return false;
+    };
+    !local.is_empty()
+        && !domain.is_empty()
+        && !local.chars().any(char::is_whitespace)
+        && !domain.chars().any(char::is_whitespace)
+        && domain
+            .rsplit_once('.')
+            .is_some_and(|(host, suffix)| !host.is_empty() && suffix.len() >= 2)
+}
+
+fn is_unique_violation(error: &sqlx::Error) -> bool {
+    error
+        .as_database_error()
+        .and_then(|error| error.code())
+        .is_some_and(|code| code == "23505")
+}
+
 fn legacy_json_number(value: Option<Value>) -> f64 {
     match value {
         Some(Value::Number(value)) => value.as_f64().unwrap_or(f64::NAN),
@@ -424,5 +554,23 @@ mod tests {
     fn rank_request_preserves_legacy_error_spelling() {
         let response = api_error(StatusCode::FORBIDDEN, "Ineligble");
         assert_eq!(response.status(), StatusCode::FORBIDDEN);
+    }
+
+    #[test]
+    fn email_validation_rejects_incomplete_addresses() {
+        assert!(valid_email("builder@example.com"));
+        assert!(!valid_email("builder@example"));
+        assert!(!valid_email("builder example.com"));
+    }
+
+    #[test]
+    fn username_character_rule_matches_legacy_route() {
+        let valid = |value: &str| {
+            value.chars().all(|character| {
+                character.is_ascii_alphanumeric() || matches!(character, '-' | '_')
+            })
+        };
+        assert!(valid("kinetic_builder-9"));
+        assert!(!valid("kinetic builder"));
     }
 }

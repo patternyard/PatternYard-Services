@@ -540,7 +540,7 @@
       "path": "/api/v1/users/changeUsername",
       "source": "api/v1/routes/users/meta/changeUsername.js",
       "family": "users",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "POST",
@@ -1023,7 +1023,7 @@
       "path": "/api/v1/users/setEmail",
       "source": "api/v1/routes/users/setEmail.js",
       "family": "users",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "POST",
