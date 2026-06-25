@@ -246,14 +246,14 @@
       "path": "/api/v1/projects/getWhoLoved",
       "source": "api/v1/routes/projects/interactions/getWhoLoved.js",
       "family": "projects",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "GET",
       "path": "/api/v1/projects/getWhoVoted",
       "source": "api/v1/routes/projects/interactions/getWhoVoted.js",
       "family": "projects",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "POST",
