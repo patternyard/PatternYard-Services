@@ -7,6 +7,7 @@ use axum::response::{IntoResponse, Redirect, Response};
 use axum::routing::get;
 use serde::Serialize;
 
+mod policy_state;
 mod project_interactions;
 mod public_discovery;
 mod public_projects;
@@ -71,6 +72,7 @@ pub(crate) fn router_with_database(database: Database) -> Router {
         .route("/api/v1/ready", get(ready))
         .route("/api/v1/robots.txt", get(robots))
         .route("/robots.txt", get(robots))
+        .merge(policy_state::router())
         .merge(project_interactions::router())
         .merge(public_discovery::router())
         .merge(public_projects::router())

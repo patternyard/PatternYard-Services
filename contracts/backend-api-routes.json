@@ -36,7 +36,7 @@
       "path": "/api/v1/misc/getLastPolicyRead",
       "source": "api/v1/routes/misc/getLastPolicyRead.js",
       "family": "misc",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "GET",
@@ -64,28 +64,28 @@
       "path": "/api/v1/misc/markGuidelinesAsRead",
       "source": "api/v1/routes/misc/markGuidelinesAsRead.js",
       "family": "misc",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "POST",
       "path": "/api/v1/misc/markPrivacyPolicyAsRead",
       "source": "api/v1/routes/misc/markPrivacyPolicyAsRead.js",
       "family": "misc",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "POST",
       "path": "/api/v1/misc/markTOSAsRead",
       "source": "api/v1/routes/misc/markTOSAsRead.js",
       "family": "misc",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "POST",
       "path": "/api/v1/misc/setLastPolicyUpdate",
       "source": "api/v1/routes/misc/setLastPolicyUpdate.js",
       "family": "misc",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "POST",
