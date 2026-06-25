@@ -11,6 +11,7 @@ mod account_reads;
 mod message_mutations;
 mod message_reads;
 mod moderation_lists;
+mod owned_project_reads;
 mod policy_state;
 mod project_interactions;
 mod public_discovery;
@@ -83,6 +84,7 @@ pub(crate) fn router_with_database(database: Database) -> Router {
         .merge(message_mutations::router())
         .merge(message_reads::router())
         .merge(moderation_lists::router())
+        .merge(owned_project_reads::router())
         .merge(policy_state::router())
         .merge(project_interactions::router())
         .merge(public_discovery::router())

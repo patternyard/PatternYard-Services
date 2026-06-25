@@ -183,7 +183,7 @@
       "path": "/api/v1/projects/getmyprojects",
       "source": "api/v1/routes/projects/search/getMyProjects.js",
       "family": "projects",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "GET",
@@ -204,7 +204,7 @@
       "path": "/api/v1/projects/getprojectsbyauthor",
       "source": "api/v1/routes/projects/search/getProjectsByAuthor.js",
       "family": "projects",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "GET",
