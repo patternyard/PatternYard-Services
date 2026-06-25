@@ -113,14 +113,14 @@
       "path": "/api/v1/projects/canuploadprojects",
       "source": "api/v1/routes/projects/canUploadProjects.js",
       "family": "projects",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "GET",
       "path": "/api/v1/projects/canviewprojects",
       "source": "api/v1/routes/projects/canViewProjects.js",
       "family": "projects",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "POST",
@@ -176,7 +176,7 @@
       "path": "/api/v1/projects/getLoves",
       "source": "api/v1/routes/projects/interactions/getLoves.js",
       "family": "projects",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "GET",
@@ -239,7 +239,7 @@
       "path": "/api/v1/projects/getVotes",
       "source": "api/v1/routes/projects/interactions/getVotes.js",
       "family": "projects",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "GET",
