@@ -813,35 +813,35 @@
       "path": "/api/v1/users/hasblocked",
       "source": "api/v1/routes/users/hasBlocked.js",
       "family": "users",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "GET",
       "path": "/api/v1/users/isadmin",
       "source": "api/v1/routes/users/mod/admin_only/isAdmin.js",
       "family": "users",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "GET",
       "path": "/api/v1/users/isBanned",
       "source": "api/v1/routes/users/meta/isBanned.js",
       "family": "users",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "GET",
       "path": "/api/v1/users/isfollowing",
       "source": "api/v1/routes/users/meta/following/isFollowing.js",
       "family": "users",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "GET",
       "path": "/api/v1/users/ismod",
       "source": "api/v1/routes/users/mod/admin_only/isMod.js",
       "family": "users",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "GET",
@@ -890,7 +890,7 @@
       "path": "/api/v1/users/meta/getfollowers",
       "source": "api/v1/routes/users/meta/following/getFollowers.js",
       "family": "users",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "POST",
