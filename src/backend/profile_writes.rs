@@ -28,6 +28,12 @@ struct SuccessResponse {
     success: bool,
 }
 
+#[derive(sqlx::FromRow)]
+struct RankEligibility {
+    rank: i32,
+    eligible: bool,
+}
+
 #[derive(Serialize)]
 struct ErrorBody<'a> {
     error: &'a str,
@@ -49,6 +55,7 @@ pub fn router() -> Router<Database> {
             post(set_featured_project),
         )
         .route("/api/v1/users/privateProfile", post(set_profile_privacy))
+        .route("/api/v1/users/requestrankup", post(request_rank_up))
 }
 
 async fn set_bio(State(database): State<Database>, Json(body): Json<ProfileWriteBody>) -> Response {
@@ -212,6 +219,50 @@ async fn set_profile_privacy(
     }
 }
 
+async fn request_rank_up(
+    State(database): State<Database>,
+    Json(body): Json<ProfileWriteBody>,
+) -> Response {
+    let token = legacy_json_string(body.token);
+    let Some(pool) = database.pool() else {
+        return database_unavailable();
+    };
+    let user = match authenticate(pool, &token, StatusCode::BAD_REQUEST).await {
+        Ok(user) => user,
+        Err(response) => return response,
+    };
+    let eligibility = match sqlx::query_as::<_, RankEligibility>(
+        "SELECT rank, \
+         (((SELECT count(*) FROM app.projects WHERE author_id = u.id) >= 3 \
+           AND first_login_at <= now() - interval '5 days') \
+          OR cardinality(badges) > 0) AS eligible \
+         FROM app.users u WHERE id = $1",
+    )
+    .bind(&user.id)
+    .fetch_one(pool)
+    .await
+    {
+        Ok(eligibility) => eligibility,
+        Err(error) => return query_failed(error),
+    };
+    if eligibility.rank != 0 {
+        return api_error(StatusCode::BAD_REQUEST, "AlreadyRankedHighest");
+    }
+    if !eligibility.eligible {
+        return api_error(StatusCode::FORBIDDEN, "Ineligble");
+    }
+
+    match sqlx::query("UPDATE app.users SET rank = 1 WHERE id = $1 AND rank = 0")
+        .bind(user.id)
+        .execute(pool)
+        .await
+    {
+        Ok(result) if result.rows_affected() == 1 => success(),
+        Ok(_) => api_error(StatusCode::BAD_REQUEST, "AlreadyRankedHighest"),
+        Err(error) => query_failed(error),
+    }
+}
+
 async fn set_featured_project(
     State(database): State<Database>,
     Json(body): Json<ProfileWriteBody>,
@@ -367,5 +418,11 @@ mod tests {
         assert!(legacy_json_bool(Some(json!(true))));
         assert!(legacy_json_bool(Some(json!("true"))));
         assert!(!legacy_json_bool(Some(json!(1))));
+    }
+
+    #[test]
+    fn rank_request_preserves_legacy_error_spelling() {
+        let response = api_error(StatusCode::FORBIDDEN, "Ineligble");
+        assert_eq!(response.status(), StatusCode::FORBIDDEN);
     }
 }
