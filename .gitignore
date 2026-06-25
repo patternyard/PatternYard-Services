@@ -19,3 +19,4 @@ __v0_jsx-dev-runtime.ts
 .DS_Store
 .idea/
 .vscode/
+.vercel

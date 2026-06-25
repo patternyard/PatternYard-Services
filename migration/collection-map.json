@@ -1,0 +1,101 @@
+{
+  "sourceDatabase": "pm_apidata",
+  "collections": [
+    {
+      "source": "users",
+      "targets": ["app.users", "app.user_private_details", "app.sessions"],
+      "identity": "id",
+      "notes": "Preserve bcrypt password hashes and public ULIDs. Hash legacy bearer tokens with SHA-256 before insertion."
+    },
+    {
+      "source": "accountCustomization",
+      "targets": ["app.account_customizations"],
+      "identity": "id"
+    },
+    {
+      "source": "loggedIPs",
+      "targets": ["app.logged_ips", "app.banned_ips"],
+      "identity": "_id"
+    },
+    {
+      "source": "passwordResetStates",
+      "targets": ["app.password_reset_challenges"],
+      "identity": "state",
+      "notes": "Hash reset tokens; preserve expiry and consumed state."
+    },
+    {
+      "source": "sentEmails",
+      "targets": ["app.email_delivery_log"],
+      "identity": "_id",
+      "notes": "Store only a one-way recipient hash in Neon."
+    },
+    {
+      "source": "followers",
+      "targets": ["app.follows"],
+      "identity": "follower+target"
+    },
+    {
+      "source": "oauthIDs",
+      "targets": ["app.oauth_identities"],
+      "identity": "method+code"
+    },
+    {
+      "source": "reports",
+      "targets": ["app.reports"],
+      "identity": "id"
+    },
+    {
+      "source": "runtimeConfig",
+      "targets": ["app.runtime_config"],
+      "identity": "id"
+    },
+    {
+      "source": "projects",
+      "targets": ["app.projects", "app.project_blobs"],
+      "identity": "id",
+      "notes": "Metadata moves to Neon; binary bodies, thumbnails, and assets remain in Vercel Blob."
+    },
+    {
+      "source": "projectStats",
+      "targets": ["app.project_interactions"],
+      "identity": "projectId+userId+type"
+    },
+    {
+      "source": "messages",
+      "targets": ["app.messages"],
+      "identity": "id"
+    },
+    {
+      "source": "oauthStates",
+      "targets": [],
+      "identity": "_id",
+      "disposition": "ephemeral-not-migrated",
+      "notes": "Five-minute OAuth flow state remains in Redis and is not copied during cutover."
+    },
+    {
+      "source": "userFeed",
+      "targets": ["app.user_feed"],
+      "identity": "_id"
+    },
+    {
+      "source": "illegalList",
+      "targets": ["app.moderation_lists"],
+      "identity": "id"
+    },
+    {
+      "source": "lastPolicyUpdates",
+      "targets": ["app.policy_versions"],
+      "identity": "id"
+    },
+    {
+      "source": "blocking",
+      "targets": ["app.blocks"],
+      "identity": "blocker+blocked"
+    },
+    {
+      "source": "tagWeights",
+      "targets": ["app.tag_weights"],
+      "identity": "tag"
+    }
+  ]
+}
