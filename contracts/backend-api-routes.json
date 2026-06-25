@@ -904,7 +904,7 @@
       "path": "/api/v1/users/privateProfile",
       "source": "api/v1/routes/users/meta/privateProfile.js",
       "family": "users",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "GET",
