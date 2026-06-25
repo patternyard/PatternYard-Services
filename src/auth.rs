@@ -9,6 +9,10 @@ pub struct AuthenticatedUser {
     pub moderator: bool,
 }
 
+pub(crate) fn hash_token(token: &str) -> Vec<u8> {
+    Sha256::digest(token.as_bytes()).to_vec()
+}
+
 pub async fn authenticate_token(
     pool: &PgPool,
     token: &str,
@@ -17,7 +21,7 @@ pub async fn authenticate_token(
         return Ok(None);
     }
 
-    let token_hash = Sha256::digest(token.as_bytes()).to_vec();
+    let token_hash = hash_token(token);
 
     sqlx::query_as::<_, AuthenticatedUser>(
         "SELECT u.id, u.username::text AS username, u.admin, u.moderator \
@@ -41,7 +45,7 @@ mod tests {
     #[test]
     fn token_hash_matches_migrator_algorithm() {
         assert_eq!(
-            Sha256::digest(b"secret-token").to_vec(),
+            hash_token("secret-token"),
             vec![
                 147, 11, 189, 197, 27, 106, 237, 92, 42, 86, 120, 253, 110, 40, 222, 231, 160, 94,
                 138, 75, 100, 60, 252, 11, 68, 39, 195, 239, 184, 108, 13, 148,
