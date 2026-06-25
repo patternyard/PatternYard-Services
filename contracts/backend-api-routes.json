@@ -855,7 +855,7 @@
       "path": "/api/v1/users/logout",
       "source": "api/v1/routes/users/login/logout.js",
       "family": "users",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "POST",
