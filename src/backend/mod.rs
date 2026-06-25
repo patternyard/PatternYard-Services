@@ -12,6 +12,7 @@ mod public_discovery;
 mod public_projects;
 mod public_state;
 mod public_users;
+mod social_users;
 
 #[derive(Serialize)]
 struct ApiMetadata<'a> {
@@ -75,6 +76,7 @@ pub(crate) fn router_with_database(database: Database) -> Router {
         .merge(public_projects::router())
         .merge(public_state::router())
         .merge(public_users::router())
+        .merge(social_users::router())
         .with_state(database)
 }
 
