@@ -43,7 +43,7 @@
       "path": "/api/v1/misc/getLastPolicyUpdate",
       "source": "api/v1/routes/misc/getLastPolicyUpdate.js",
       "family": "misc",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "GET",
@@ -57,7 +57,7 @@
       "path": "/api/v1/misc/getStats",
       "source": "api/v1/routes/misc/getStats.js",
       "family": "misc",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "POST",
@@ -372,7 +372,7 @@
       "path": "/api/v1/projects/searchusers",
       "source": "api/v1/routes/projects/search/searchUsers.js",
       "family": "projects",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "POST",
