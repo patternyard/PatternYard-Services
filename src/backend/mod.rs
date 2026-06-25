@@ -22,6 +22,7 @@ mod public_state;
 mod public_users;
 mod report_mutations;
 mod report_reads;
+mod session_writes;
 mod social_users;
 mod staff_directory;
 mod user_feed;
@@ -98,6 +99,7 @@ pub(crate) fn router_with_database(database: Database) -> Router {
         .merge(public_users::router())
         .merge(report_mutations::router())
         .merge(report_reads::router())
+        .merge(session_writes::router())
         .merge(social_users::router())
         .merge(staff_directory::router())
         .merge(user_feed::router())
