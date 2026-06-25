@@ -911,7 +911,7 @@
       "path": "/api/v1/users/profile",
       "source": "api/v1/routes/users/profile.js",
       "family": "users",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "POST",
