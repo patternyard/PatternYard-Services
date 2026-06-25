@@ -1,0 +1,30 @@
+name: Rust CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - patternyard-main
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy,rustfmt
+      - uses: Swatinem/rust-cache@v2
+      - name: Check formatting
+        run: cargo fmt --all -- --check
+      - name: Check services
+        run: cargo check --package patternyard-services --all-targets
+      - name: Check migrator
+        run: cargo check --package patternyard-migrator --all-targets
+      - name: Lint
+        run: cargo clippy --workspace --all-targets -- -D warnings
+      - name: Test
+        run: cargo test --workspace

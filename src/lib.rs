@@ -1,4 +1,5 @@
 pub mod backend;
+pub mod db;
 pub mod error;
 pub mod host;
 pub mod observability;
@@ -12,6 +13,10 @@ use tower_http::sensitive_headers::SetSensitiveRequestHeadersLayer;
 use tower_http::trace::TraceLayer;
 
 pub fn app() -> Router {
+    app_with_router(backend::router())
+}
+
+fn app_with_router(router: Router) -> Router {
     let request_id = HeaderName::from_static("x-request-id");
     let cors = CorsLayer::new()
         .allow_origin(Any)
@@ -26,7 +31,7 @@ pub fn app() -> Router {
             Method::DELETE,
         ]);
 
-    backend::router()
+    router
         .fallback(error::not_found)
         .layer(middleware::from_fn(host::identify_service))
         .layer(PropagateRequestIdLayer::new(request_id.clone()))
@@ -64,6 +69,43 @@ mod tests {
             response.into_body().collect().await.unwrap().to_bytes(),
             "Pong!"
         );
+    }
+
+    #[tokio::test]
+    async fn home_redirects_to_patternyard() {
+        let response = app()
+            .oneshot(
+                Request::builder()
+                    .uri("/")
+                    .header("host", "api.patternyard.dev")
+                    .body(Body::empty())
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+
+        assert_eq!(response.status(), StatusCode::TEMPORARY_REDIRECT);
+        assert_eq!(
+            response.headers()[header::LOCATION],
+            "https://patternyard.dev"
+        );
+    }
+
+    #[tokio::test]
+    async fn readiness_is_explicit_without_database_configuration() {
+        let router = backend::router_with_database(db::Database::default());
+        let response = app_with_router(router)
+            .oneshot(
+                Request::builder()
+                    .uri("/api/v1/ready")
+                    .header("host", "api.patternyard.dev")
+                    .body(Body::empty())
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+
+        assert_eq!(response.status(), StatusCode::SERVICE_UNAVAILABLE);
     }
 
     #[tokio::test]
