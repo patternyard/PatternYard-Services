@@ -23,6 +23,8 @@ struct ProfileWriteBody {
     private_to_following: Option<Value>,
     new_username: Option<Value>,
     email: Option<Value>,
+    birthday: Option<Value>,
+    country: Option<Value>,
 }
 
 #[derive(Serialize)]
@@ -34,6 +36,18 @@ struct SuccessResponse {
 struct RankEligibility {
     rank: i32,
     eligible: bool,
+}
+
+#[derive(sqlx::FromRow)]
+struct SafetyDetailsState {
+    birthday_entered: bool,
+    country_entered: bool,
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct CountryLookup {
+    country_codes: Vec<String>,
 }
 
 #[derive(Serialize)]
@@ -60,6 +74,10 @@ pub fn router() -> Router<Database> {
         .route("/api/v1/users/requestrankup", post(request_rank_up))
         .route("/api/v1/users/changeUsername", post(change_username))
         .route("/api/v1/users/setEmail", post(set_email))
+        .route(
+            "/api/v1/users/filloutSafetyDetails",
+            post(fill_out_safety_details),
+        )
 }
 
 async fn set_bio(State(database): State<Database>, Json(body): Json<ProfileWriteBody>) -> Response {
@@ -329,6 +347,95 @@ async fn set_email(
     }
 }
 
+async fn fill_out_safety_details(
+    State(database): State<Database>,
+    Json(body): Json<ProfileWriteBody>,
+) -> Response {
+    let token = legacy_json_string(body.token);
+    let birthday_text = legacy_json_string(body.birthday);
+    let country_text = legacy_json_string(body.country);
+    let birthday = if birthday_text.is_empty() || birthday_text == "undefined" {
+        None
+    } else {
+        match parse_birth_date(&birthday_text) {
+            Some(birthday) => Some(birthday),
+            None => return api_error(StatusCode::BAD_REQUEST, "InvalidBirthday"),
+        }
+    };
+    let country = if country_text.is_empty() || country_text == "undefined" {
+        None
+    } else if supported_country(&country_text) {
+        Some(country_text)
+    } else {
+        return api_error(StatusCode::BAD_REQUEST, "UnsupportedCountry");
+    };
+    if birthday.is_none() && country.is_none() {
+        return api_error(StatusCode::BAD_REQUEST, "MissingOneField");
+    }
+    let Some(pool) = database.pool() else {
+        return database_unavailable();
+    };
+    let user = match authenticate(pool, &token, StatusCode::BAD_REQUEST).await {
+        Ok(user) => user,
+        Err(response) => return response,
+    };
+    let state = match sqlx::query_as::<_, SafetyDetailsState>(
+        "SELECT birthday_entered, country_entered FROM app.users WHERE id = $1",
+    )
+    .bind(&user.id)
+    .fetch_one(pool)
+    .await
+    {
+        Ok(state) => state,
+        Err(error) => return query_failed(error),
+    };
+    if birthday.is_some() && state.birthday_entered {
+        return api_error(StatusCode::BAD_REQUEST, "AlreadyEnteredBirthday");
+    }
+    if country.is_some() && state.country_entered {
+        return api_error(StatusCode::BAD_REQUEST, "AlreadyEnteredCountry");
+    }
+
+    let mut transaction = match pool.begin().await {
+        Ok(transaction) => transaction,
+        Err(error) => return query_failed(error),
+    };
+    if let Err(error) = sqlx::query(
+        "INSERT INTO app.user_private_details (user_id, birth_date, country_code, updated_at) \
+         VALUES ($1, $2, $3, now()) \
+         ON CONFLICT (user_id) DO UPDATE SET \
+         birth_date = COALESCE(EXCLUDED.birth_date, app.user_private_details.birth_date), \
+         country_code = COALESCE(EXCLUDED.country_code, app.user_private_details.country_code), \
+         updated_at = now()",
+    )
+    .bind(&user.id)
+    .bind(birthday)
+    .bind(&country)
+    .execute(&mut *transaction)
+    .await
+    {
+        return query_failed(error);
+    }
+    if let Err(error) = sqlx::query(
+        "UPDATE app.users SET \
+         birthday_entered = birthday_entered OR $1, \
+         country_entered = country_entered OR $2, updated_at = now() WHERE id = $3",
+    )
+    .bind(birthday.is_some())
+    .bind(country.is_some())
+    .bind(user.id)
+    .execute(&mut *transaction)
+    .await
+    {
+        return query_failed(error);
+    }
+
+    match transaction.commit().await {
+        Ok(()) => success(),
+        Err(error) => query_failed(error),
+    }
+}
+
 async fn request_rank_up(
     State(database): State<Database>,
     Json(body): Json<ProfileWriteBody>,
@@ -477,6 +584,25 @@ fn legacy_json_bool(value: Option<Value>) -> bool {
     legacy_json_string(value) == "true"
 }
 
+fn parse_birth_date(value: &str) -> Option<chrono::NaiveDate> {
+    chrono::DateTime::parse_from_rfc3339(value)
+        .map(|date| date.date_naive())
+        .or_else(|_| chrono::NaiveDate::parse_from_str(value, "%Y-%m-%d"))
+        .ok()
+}
+
+fn supported_country(value: &str) -> bool {
+    static COUNTRIES: std::sync::OnceLock<CountryLookup> = std::sync::OnceLock::new();
+    COUNTRIES
+        .get_or_init(|| {
+            serde_json::from_str(include_str!("country-lookup.json"))
+                .expect("country lookup is valid JSON")
+        })
+        .country_codes
+        .iter()
+        .any(|country| country == value)
+}
+
 fn valid_email(email: &str) -> bool {
     let Some((local, domain)) = email.split_once('@') else {
         return false;
@@ -572,5 +698,26 @@ mod tests {
         };
         assert!(valid("kinetic_builder-9"));
         assert!(!valid("kinetic builder"));
+    }
+
+    #[test]
+    fn safety_details_accept_legacy_date_shapes() {
+        assert_eq!(
+            parse_birth_date("2016-04-03T00:00:00.000Z"),
+            chrono::NaiveDate::from_ymd_opt(2016, 4, 3)
+        );
+        assert_eq!(
+            parse_birth_date("2016-04-03"),
+            chrono::NaiveDate::from_ymd_opt(2016, 4, 3)
+        );
+        assert!(parse_birth_date("not-a-date").is_none());
+    }
+
+    #[test]
+    fn safety_details_use_legacy_country_allowlist() {
+        assert!(supported_country("US"));
+        assert!(supported_country("GB"));
+        assert!(!supported_country("us"));
+        assert!(!supported_country("ZZ"));
     }
 }
