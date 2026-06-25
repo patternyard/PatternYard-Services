@@ -1,0 +1,330 @@
+use crate::auth::{AuthenticatedUser, authenticate_token};
+use crate::db::Database;
+use axum::extract::State;
+use axum::http::StatusCode;
+use axum::response::{IntoResponse, Response};
+use axum::routing::post;
+use axum::{Json, Router};
+use serde::{Deserialize, Serialize};
+use serde_json::Value;
+use sqlx::PgPool;
+
+#[derive(Deserialize, Default)]
+#[serde(rename_all = "camelCase")]
+struct ProfileWriteBody {
+    token: Option<Value>,
+    target: Option<Value>,
+    bio: Option<Value>,
+    customization: Option<Value>,
+    toggle: Option<Value>,
+    project: Option<Value>,
+    title: Option<Value>,
+}
+
+#[derive(Serialize)]
+struct SuccessResponse {
+    success: bool,
+}
+
+#[derive(Serialize)]
+struct ErrorBody<'a> {
+    error: &'a str,
+}
+
+pub fn router() -> Router<Database> {
+    Router::new()
+        .route("/api/v1/users/setBio", post(set_bio))
+        .route(
+            "/api/v1/users/customization/setCustomization",
+            post(set_customization),
+        )
+        .route(
+            "/api/v1/users/customization/setCustomizationDisabled",
+            post(set_customization_disabled),
+        )
+        .route(
+            "/api/v1/users/setmyfeaturedproject",
+            post(set_featured_project),
+        )
+}
+
+async fn set_bio(State(database): State<Database>, Json(body): Json<ProfileWriteBody>) -> Response {
+    let token = legacy_json_string(body.token);
+    let bio = legacy_json_string(body.bio);
+    if bio.len() > 2048 {
+        return api_error(StatusCode::BAD_REQUEST, "BioLengthMustBeLessThan2048Chars");
+    }
+    let Some(pool) = database.pool() else {
+        return database_unavailable();
+    };
+    let user = match authenticate(pool, &token, StatusCode::BAD_REQUEST).await {
+        Ok(user) => user,
+        Err(response) => return response,
+    };
+    match contains_illegal_wording(pool, &bio).await {
+        Ok(true) => return api_error(StatusCode::BAD_REQUEST, "IllegalWordsUsed"),
+        Err(error) => return query_failed(error),
+        Ok(false) => {}
+    }
+
+    match sqlx::query("UPDATE app.users SET bio = $1 WHERE id = $2")
+        .bind(bio)
+        .bind(user.id)
+        .execute(pool)
+        .await
+    {
+        Ok(_) => success(),
+        Err(error) => query_failed(error),
+    }
+}
+
+async fn set_customization(
+    State(database): State<Database>,
+    Json(body): Json<ProfileWriteBody>,
+) -> Response {
+    let token = legacy_json_string(body.token);
+    let customization = legacy_json_string(body.customization);
+    let target = body
+        .target
+        .map(|value| legacy_json_string(Some(value)).to_lowercase());
+    let settings = match serde_json::from_str::<Value>(&customization) {
+        Ok(Value::Object(settings)) => Value::Object(settings),
+        _ => return api_error(StatusCode::BAD_REQUEST, "Invalid customization JSON"),
+    };
+    let Some(pool) = database.pool() else {
+        return database_unavailable();
+    };
+    let user = match authenticate(pool, &token, StatusCode::BAD_REQUEST).await {
+        Ok(user) => user,
+        Err(response) => return response,
+    };
+
+    let target_id = if let Some(target) = target {
+        if !user.admin && !user.moderator {
+            return api_error(StatusCode::UNAUTHORIZED, "Invalid credentials");
+        }
+        match user_id(pool, &target).await {
+            Ok(Some(id)) => id,
+            Ok(None) => return api_error(StatusCode::NOT_FOUND, "User does not exist"),
+            Err(error) => return query_failed(error),
+        }
+    } else {
+        match has_badge(pool, &user.id, "donator").await {
+            Ok(false) => return api_error(StatusCode::FORBIDDEN, "MissingPermission"),
+            Err(error) => return query_failed(error),
+            Ok(true) => {}
+        }
+        match customization_disabled(pool, &user.id).await {
+            Ok(true) => {
+                return api_error(StatusCode::FORBIDDEN, "FeatureDisabledForThisAccount");
+            }
+            Err(error) => return query_failed(error),
+            Ok(false) => user.id,
+        }
+    };
+
+    match sqlx::query(
+        "INSERT INTO app.account_customizations (user_id, settings, updated_at) \
+         VALUES ($1, $2, now()) \
+         ON CONFLICT (user_id) DO UPDATE \
+         SET settings = EXCLUDED.settings, updated_at = EXCLUDED.updated_at",
+    )
+    .bind(target_id)
+    .bind(settings)
+    .execute(pool)
+    .await
+    {
+        Ok(_) => success(),
+        Err(error) => query_failed(error),
+    }
+}
+
+async fn set_customization_disabled(
+    State(database): State<Database>,
+    Json(body): Json<ProfileWriteBody>,
+) -> Response {
+    let token = legacy_json_string(body.token);
+    let target = legacy_json_string(body.target).to_lowercase();
+    let is_enabled = legacy_json_bool(body.toggle);
+    let Some(pool) = database.pool() else {
+        return database_unavailable();
+    };
+    let user = match authenticate(pool, &token, StatusCode::UNAUTHORIZED).await {
+        Ok(user) => user,
+        Err(response) => return response,
+    };
+    if !user.admin && !user.moderator {
+        return api_error(StatusCode::UNAUTHORIZED, "Invalid credentials");
+    }
+    let target_id = match user_id(pool, &target).await {
+        Ok(Some(id)) => id,
+        Ok(None) => return api_error(StatusCode::NOT_FOUND, "User does not exist"),
+        Err(error) => return query_failed(error),
+    };
+
+    match sqlx::query(
+        "INSERT INTO app.account_customizations (user_id, disabled, updated_at) \
+         VALUES ($1, $2, now()) \
+         ON CONFLICT (user_id) DO UPDATE \
+         SET disabled = EXCLUDED.disabled, updated_at = EXCLUDED.updated_at",
+    )
+    .bind(target_id)
+    .bind(!is_enabled)
+    .execute(pool)
+    .await
+    {
+        Ok(_) => success(),
+        Err(error) => query_failed(error),
+    }
+}
+
+async fn set_featured_project(
+    State(database): State<Database>,
+    Json(body): Json<ProfileWriteBody>,
+) -> Response {
+    let token = legacy_json_string(body.token);
+    let project = legacy_json_string(body.project);
+    let title = legacy_json_number(body.title);
+    if !title.is_finite() || !(0.0..=500.0).contains(&title) {
+        return api_error(StatusCode::BAD_REQUEST, "InvalidTitle");
+    }
+    let Some(pool) = database.pool() else {
+        return database_unavailable();
+    };
+    let user = match authenticate(pool, &token, StatusCode::BAD_REQUEST).await {
+        Ok(user) => user,
+        Err(response) => return response,
+    };
+    match sqlx::query_scalar::<_, bool>("SELECT EXISTS(SELECT 1 FROM app.projects WHERE id = $1)")
+        .bind(&project)
+        .fetch_one(pool)
+        .await
+    {
+        Ok(false) => return api_error(StatusCode::BAD_REQUEST, "InvalidProject"),
+        Err(error) => return query_failed(error),
+        Ok(true) => {}
+    }
+
+    match sqlx::query(
+        "UPDATE app.users SET featured_project_id = $1, featured_project_title = $2 WHERE id = $3",
+    )
+    .bind(project)
+    .bind(title.to_string())
+    .bind(user.id)
+    .execute(pool)
+    .await
+    {
+        Ok(_) => success(),
+        Err(error) => query_failed(error),
+    }
+}
+
+async fn authenticate(
+    pool: &PgPool,
+    token: &str,
+    status: StatusCode,
+) -> Result<AuthenticatedUser, Response> {
+    match authenticate_token(pool, token).await {
+        Ok(Some(user)) => Ok(user),
+        Ok(None) => Err(api_error(status, "Reauthenticate")),
+        Err(error) => Err(query_failed(error)),
+    }
+}
+
+async fn user_id(pool: &PgPool, username: &str) -> Result<Option<String>, sqlx::Error> {
+    sqlx::query_scalar("SELECT id FROM app.users WHERE username = $1")
+        .bind(username)
+        .fetch_optional(pool)
+        .await
+}
+
+async fn has_badge(pool: &PgPool, user_id: &str, badge: &str) -> Result<bool, sqlx::Error> {
+    sqlx::query_scalar("SELECT $2 = ANY(badges) FROM app.users WHERE id = $1")
+        .bind(user_id)
+        .bind(badge)
+        .fetch_one(pool)
+        .await
+}
+
+async fn customization_disabled(pool: &PgPool, user_id: &str) -> Result<bool, sqlx::Error> {
+    sqlx::query_scalar(
+        "SELECT COALESCE((SELECT disabled FROM app.account_customizations WHERE user_id = $1), false)",
+    )
+    .bind(user_id)
+    .fetch_one(pool)
+    .await
+}
+
+async fn contains_illegal_wording(pool: &PgPool, text: &str) -> Result<bool, sqlx::Error> {
+    let words = sqlx::query_scalar::<_, Vec<String>>(
+        "SELECT items FROM app.moderation_lists WHERE key IN ('illegalWords', 'illegalWebsites')",
+    )
+    .fetch_all(pool)
+    .await?;
+    let text = text.to_lowercase();
+    Ok(words
+        .into_iter()
+        .flatten()
+        .filter(|word| !word.is_empty())
+        .any(|word| text.contains(&word.to_lowercase())))
+}
+
+fn legacy_json_string(value: Option<Value>) -> String {
+    match value {
+        None => "undefined".to_owned(),
+        Some(Value::String(value)) => value,
+        Some(Value::Null) => "null".to_owned(),
+        Some(value) => value.to_string(),
+    }
+}
+
+fn legacy_json_bool(value: Option<Value>) -> bool {
+    legacy_json_string(value) == "true"
+}
+
+fn legacy_json_number(value: Option<Value>) -> f64 {
+    match value {
+        Some(Value::Number(value)) => value.as_f64().unwrap_or(f64::NAN),
+        Some(Value::String(value)) => value.parse().unwrap_or(f64::NAN),
+        Some(Value::Null) => 0.0,
+        Some(Value::Bool(true)) => 1.0,
+        Some(Value::Bool(false)) => 0.0,
+        _ => f64::NAN,
+    }
+}
+
+fn success() -> Response {
+    Json(SuccessResponse { success: true }).into_response()
+}
+
+fn database_unavailable() -> Response {
+    api_error(StatusCode::SERVICE_UNAVAILABLE, "Database unavailable")
+}
+
+fn query_failed(error: sqlx::Error) -> Response {
+    tracing::error!(%error, "profile write query failed");
+    api_error(StatusCode::INTERNAL_SERVER_ERROR, "Internal server error")
+}
+
+fn api_error(status: StatusCode, message: &'static str) -> Response {
+    (status, Json(ErrorBody { error: message })).into_response()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use serde_json::json;
+
+    #[test]
+    fn legacy_body_coercion_is_preserved() {
+        assert_eq!(legacy_json_string(None), "undefined");
+        assert!(legacy_json_bool(Some(json!("true"))));
+        assert_eq!(legacy_json_number(Some(json!("12"))), 12.0);
+    }
+
+    #[test]
+    fn featured_title_range_is_inclusive() {
+        assert!((0.0..=500.0).contains(&0.0));
+        assert!((0.0..=500.0).contains(&500.0));
+    }
+}
