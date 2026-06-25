@@ -603,7 +603,7 @@
       "path": "/api/v1/users/filloutSafetyDetails",
       "source": "api/v1/routes/users/login/filloutSafetyDetails.js",
       "family": "users",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "POST",
