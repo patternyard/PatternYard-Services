@@ -121,12 +121,18 @@ async fn get_last_policy_update(State(database): State<Database>) -> Response {
     };
 
     match sqlx::query_scalar::<_, Value>(
-        "SELECT COALESCE(jsonb_object_agg(policy, published_at), '{}'::jsonb) \
-         FROM (\
-             SELECT policy, max(published_at) AS published_at \
-             FROM app.policy_versions \
-             GROUP BY policy\
-         ) latest_versions",
+        "SELECT COALESCE(\
+             jsonb_object_agg(\
+                 CASE policy \
+                     WHEN 'privacy' THEN 'privacyPolicy' \
+                     WHEN 'terms' THEN 'TOS' \
+                     ELSE policy \
+                 END, \
+                 floor(extract(epoch FROM published_at) * 1000)::bigint\
+             ), \
+             '{}'::jsonb\
+         ) \
+         FROM app.policy_versions",
     )
     .fetch_one(pool)
     .await
