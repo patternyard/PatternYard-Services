@@ -1,4 +1,5 @@
 mod account_relations;
+mod communications;
 mod projects;
 
 use anyhow::{Context, Result, bail};
@@ -100,6 +101,15 @@ async fn main() -> Result<()> {
                 }
                 "projects" => {
                     projects::migrate(source.collection("projects"), target.as_ref(), limit).await
+                }
+                "messages" | "userFeed" | "reports" => {
+                    communications::migrate(
+                        &collection,
+                        source.collection(&collection),
+                        target.as_ref(),
+                        limit,
+                    )
+                    .await
                 }
                 _ => bail!(
                     "collection {collection:?} is not implemented yet; run `audit` for the complete inventory"
