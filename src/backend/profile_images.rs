@@ -82,7 +82,7 @@ async fn get_profile_image(
     }
     let token = match blob_token() {
         Ok(token) => token,
-        Err(response) => return response,
+        Err(response) => return *response,
     };
     let response = match reqwest::Client::new()
         .get(image_url)
@@ -166,7 +166,7 @@ async fn set_profile_image(
     };
     let token = match blob_token() {
         Ok(token) => token,
-        Err(response) => return response,
+        Err(response) => return *response,
     };
     let store_id = match blob_store_id(&token) {
         Some(store_id) => store_id.to_owned(),
@@ -269,13 +269,16 @@ async fn normalize_profile_image(source: Vec<u8>) -> Result<Vec<u8>, &'static st
     })?
 }
 
-fn blob_token() -> Result<String, Response> {
+fn blob_token() -> Result<String, Box<Response>> {
     std::env::var("BLOB_READ_WRITE_TOKEN")
         .ok()
         .filter(|token| !token.is_empty())
         .ok_or_else(|| {
             tracing::error!("BLOB_READ_WRITE_TOKEN is not configured");
-            api_error(StatusCode::SERVICE_UNAVAILABLE, "StorageUnavailable")
+            Box::new(api_error(
+                StatusCode::SERVICE_UNAVAILABLE,
+                "StorageUnavailable",
+            ))
         })
 }
 
