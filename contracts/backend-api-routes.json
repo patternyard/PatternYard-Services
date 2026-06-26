@@ -624,21 +624,21 @@
       "path": "/api/v1/users/getAllAccountsWithIP",
       "source": "api/v1/routes/users/mod/admin_only/getAllAccountsWithIP.js",
       "family": "users",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "GET",
       "path": "/api/v1/users/getAllIPs",
       "source": "api/v1/routes/users/mod/admin_only/getAllIPs.js",
       "family": "users",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "GET",
       "path": "/api/v1/users/getAlts",
       "source": "api/v1/routes/users/mod/getAlts.js",
       "family": "users",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "GET",
@@ -652,7 +652,7 @@
       "path": "/api/v1/users/getemail",
       "source": "api/v1/routes/users/mod/admin_only/getEmail.js",
       "family": "users",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "GET",
@@ -673,7 +673,7 @@
       "path": "/api/v1/users/getmessages",
       "source": "api/v1/routes/users/messages/getMessages.js",
       "family": "users",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "GET",
@@ -726,17 +726,17 @@
     },
     {
       "method": "GET",
-      "path": "/api/v1/users/getuserstats",
-      "source": "api/v1/routes/users/mod/admin_only/getUserStats.js",
-      "family": "users",
-      "status": "unimplemented"
+    "path": "/api/v1/users/getuserstats",
+    "source": "api/v1/routes/users/mod/admin_only/getUserStats.js",
+    "family": "users",
+    "status": "implemented"
     },
     {
       "method": "GET",
-      "path": "/api/v1/users/getworstoffenders",
-      "source": "api/v1/routes/users/mod/admin_only/getperformancemongostuff.js",
-      "family": "users",
-      "status": "unimplemented"
+    "path": "/api/v1/users/getworstoffenders",
+    "source": "api/v1/routes/users/mod/admin_only/getperformancemongostuff.js",
+    "family": "users",
+    "status": "implemented"
     },
     {
       "method": "GET",

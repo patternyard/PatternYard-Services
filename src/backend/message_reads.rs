@@ -49,12 +49,32 @@ struct ErrorBody<'a> {
 
 pub fn router() -> Router<Database> {
     Router::new()
+        .route("/api/v1/users/getmessages", get(get_messages))
         .route("/api/v1/users/getunreadmessages", get(get_unread_messages))
         .route("/api/v1/users/getmessagecount", get(get_message_count))
         .route(
             "/api/v1/users/getunreadmessagecount",
             get(get_unread_message_count),
         )
+}
+
+async fn get_messages(
+    State(database): State<Database>,
+    Query(query): Query<MessageQuery>,
+) -> Response {
+    let Some(pool) = database.pool() else {
+        return database_unavailable();
+    };
+    let user = match authenticate(pool, query.token).await {
+        Ok(user) => user,
+        Err(response) => return response,
+    };
+    let page = query.page.unwrap_or(0).max(0);
+
+    match fetch_messages(pool, &user.id, page, false).await {
+        Ok(messages) => Json(MessagesResponse { messages }).into_response(),
+        Err(error) => query_failed(error),
+    }
 }
 
 async fn get_unread_messages(
@@ -126,17 +146,27 @@ async fn fetch_unread_messages(
     receiver_id: &str,
     page: i64,
 ) -> Result<Vec<LegacyMessage>, sqlx::Error> {
+    fetch_messages(pool, receiver_id, page, true).await
+}
+
+async fn fetch_messages(
+    pool: &PgPool,
+    receiver_id: &str,
+    page: i64,
+    unread_only: bool,
+) -> Result<Vec<LegacyMessage>, sqlx::Error> {
     sqlx::query_as::<_, LegacyMessage>(
         "SELECT id, receiver_id AS receiver, \
             CASE WHEN message IS JSON THEN message::jsonb ELSE to_jsonb(message) END AS message, \
             disputable, dispute, project_id, is_read AS read, \
             floor(extract(epoch FROM created_at) * 1000)::bigint AS date \
          FROM app.messages \
-         WHERE receiver_id = $1 AND NOT is_read \
+         WHERE receiver_id = $1 AND (NOT $2 OR NOT is_read) \
          ORDER BY created_at DESC, id DESC \
-         LIMIT $2 OFFSET $3",
+         LIMIT $3 OFFSET $4",
     )
     .bind(receiver_id)
+    .bind(unread_only)
     .bind(PAGE_SIZE)
     .bind(page.saturating_mul(PAGE_SIZE))
     .fetch_all(pool)
