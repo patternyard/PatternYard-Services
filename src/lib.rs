@@ -337,7 +337,11 @@ mod tests {
             .await
             .unwrap();
         assert_eq!(response.status(), StatusCode::OK);
-        assert!(response.headers().contains_key(header::CONTENT_SECURITY_POLICY));
+        assert!(
+            response
+                .headers()
+                .contains_key(header::CONTENT_SECURITY_POLICY)
+        );
     }
 
     #[tokio::test]

@@ -127,12 +127,18 @@ pub fn router() -> Router<Database> {
     Router::new()
         .route("/api/v1/users/addoauthmethod", get(add_oauth_method))
         .route("/api/v1/users/addpasswordtooauth", get(add_password))
-        .route("/api/v1/users/createoauthaccount", get(create_oauth_account))
+        .route(
+            "/api/v1/users/createoauthaccount",
+            get(create_oauth_account),
+        )
         .route("/api/v1/users/loginoauthaccount", get(login_oauth_account))
         .route("/api/v1/users/removeoauthmethod", post(remove_oauth_method))
         .route("/api/v1/users/sendloginsuccess", get(send_login_success))
         .route("/api/v1/users/addscratchlogin", get(scratch_add_method))
-        .route("/api/v1/users/scratchaddpassword", get(scratch_add_password))
+        .route(
+            "/api/v1/users/scratchaddpassword",
+            get(scratch_add_password),
+        )
         .route(
             "/api/v1/users/scratchaddpasswordfinal",
             get(scratch_add_password_final),
@@ -383,11 +389,11 @@ async fn create_with_identity(
         Ok(None) => {}
         Err(error) => return query_failed(error),
     }
-    let (username, display_username) = match available_username(pool, &profile.suggested_username).await
-    {
-        Ok(value) => value,
-        Err(error) => return query_failed(error),
-    };
+    let (username, display_username) =
+        match available_username(pool, &profile.suggested_username).await {
+            Ok(value) => value,
+            Err(error) => return query_failed(error),
+        };
     let user_id = ulid::Ulid::new().to_string();
     let mut transaction = match pool.begin().await {
         Ok(transaction) => transaction,
@@ -408,16 +414,15 @@ async fn create_with_identity(
     {
         return query_failed(error);
     }
-    if let Err(error) = sqlx::query(
-        "INSERT INTO app.user_private_details (user_id) VALUES ($1)",
-    )
-    .bind(&user_id)
-    .execute(&mut *transaction)
-    .await
+    if let Err(error) = sqlx::query("INSERT INTO app.user_private_details (user_id) VALUES ($1)")
+        .bind(&user_id)
+        .execute(&mut *transaction)
+        .await
     {
         return query_failed(error);
     }
-    if let Err(error) = insert_identity(&mut transaction, &user_id, provider, &profile.subject).await
+    if let Err(error) =
+        insert_identity(&mut transaction, &user_id, provider, &profile.subject).await
     {
         return identity_insert_failed(error);
     }
@@ -449,19 +454,19 @@ async fn add_identity(
         Ok(transaction) => transaction,
         Err(error) => return query_failed(error),
     };
-    if let Err(error) = insert_identity(&mut transaction, user_id, provider, &profile.subject).await {
+    if let Err(error) = insert_identity(&mut transaction, user_id, provider, &profile.subject).await
+    {
         return identity_insert_failed(error);
     }
-    let username = match sqlx::query_scalar::<_, String>(
-        "SELECT username::text FROM app.users WHERE id = $1",
-    )
-    .bind(user_id)
-    .fetch_one(&mut *transaction)
-    .await
-    {
-        Ok(username) => username,
-        Err(error) => return query_failed(error),
-    };
+    let username =
+        match sqlx::query_scalar::<_, String>("SELECT username::text FROM app.users WHERE id = $1")
+            .bind(user_id)
+            .fetch_one(&mut *transaction)
+            .await
+        {
+            Ok(username) => username,
+            Err(error) => return query_failed(error),
+        };
     let token = match create_session_executor(&mut transaction, user_id).await {
         Ok(token) => token,
         Err(error) => return query_failed(error),
@@ -507,14 +512,24 @@ async fn github_add_password_final(
     State(database): State<Database>,
     Json(body): Json<PasswordBody>,
 ) -> Response {
-    finish_add_password(database, legacy_json_string(body.at), legacy_json_string(body.password)).await
+    finish_add_password(
+        database,
+        legacy_json_string(body.at),
+        legacy_json_string(body.password),
+    )
+    .await
 }
 
 async fn google_add_password_final(
     State(database): State<Database>,
     Json(body): Json<PasswordBody>,
 ) -> Response {
-    finish_add_password(database, legacy_json_string(body.at), legacy_json_string(body.password)).await
+    finish_add_password(
+        database,
+        legacy_json_string(body.at),
+        legacy_json_string(body.password),
+    )
+    .await
 }
 
 async fn scratch_add_password_final(
@@ -599,13 +614,12 @@ async fn remove_oauth_method(
         Ok(None) => return api_error(StatusCode::BAD_REQUEST, "Reauthenticate"),
         Err(error) => return query_failed(error),
     };
-    let result = sqlx::query(
-        "DELETE FROM app.oauth_identities WHERE user_id = $1 AND provider = $2",
-    )
-    .bind(user.id)
-    .bind(provider.as_str())
-    .execute(pool)
-    .await;
+    let result =
+        sqlx::query("DELETE FROM app.oauth_identities WHERE user_id = $1 AND provider = $2")
+            .bind(user.id)
+            .bind(provider.as_str())
+            .execute(pool)
+            .await;
     match result {
         Ok(result) if result.rows_affected() == 1 => {
             Json(SuccessBody { success: true }).into_response()
@@ -673,25 +687,31 @@ async fn provider_profile(
     let access_token = exchange_code(provider, code, callback).await?;
     let client = reqwest::Client::new();
     let response = match provider {
-        Provider::Github => client
-            .get("https://api.github.com/user")
-            .bearer_auth(&access_token)
-            .header(header::USER_AGENT, "PatternYard-Services")
-            .send()
-            .await,
-        Provider::Google => client
-            .get("https://openidconnect.googleapis.com/v1/userinfo")
-            .bearer_auth(&access_token)
-            .send()
-            .await,
-        Provider::Scratch => client
-            .get("https://oauth2.scratch-wiki.info/w/rest.php/soa2/v0/user")
-            .header(
-                header::AUTHORIZATION,
-                format!("Bearer {}", base64_encode(access_token.as_bytes())),
-            )
-            .send()
-            .await,
+        Provider::Github => {
+            client
+                .get("https://api.github.com/user")
+                .bearer_auth(&access_token)
+                .header(header::USER_AGENT, "PatternYard-Services")
+                .send()
+                .await
+        }
+        Provider::Google => {
+            client
+                .get("https://openidconnect.googleapis.com/v1/userinfo")
+                .bearer_auth(&access_token)
+                .send()
+                .await
+        }
+        Provider::Scratch => {
+            client
+                .get("https://oauth2.scratch-wiki.info/w/rest.php/soa2/v0/user")
+                .header(
+                    header::AUTHORIZATION,
+                    format!("Bearer {}", base64_encode(access_token.as_bytes())),
+                )
+                .send()
+                .await
+        }
     }
     .map_err(|error| {
         tracing::warn!(%error, provider = provider.as_str(), "OAuth profile request failed");
@@ -708,7 +728,10 @@ async fn provider_profile(
     let (subject, username) = match provider {
         Provider::Github => (
             json_scalar(payload.get("id")),
-            payload.get("login").and_then(Value::as_str).map(str::to_owned),
+            payload
+                .get("login")
+                .and_then(Value::as_str)
+                .map(str::to_owned),
         ),
         Provider::Google => (
             json_scalar(payload.get("sub")),
@@ -740,10 +763,8 @@ async fn exchange_code(provider: Provider, code: &str, callback: &str) -> Result
     let response = match provider {
         Provider::Github => {
             let client_id = required_env(&["GITHUB_OAUTH_CLIENT_ID", "GithubOAuthClientID"])?;
-            let client_secret = required_env(&[
-                "GITHUB_OAUTH_CLIENT_SECRET",
-                "GithubOAuthClientSecret",
-            ])?;
+            let client_secret =
+                required_env(&["GITHUB_OAUTH_CLIENT_SECRET", "GithubOAuthClientSecret"])?;
             client
                 .post("https://github.com/login/oauth/access_token")
                 .header(header::ACCEPT, "application/json")
@@ -758,10 +779,8 @@ async fn exchange_code(provider: Provider, code: &str, callback: &str) -> Result
         }
         Provider::Google => {
             let client_id = required_env(&["GOOGLE_OAUTH_CLIENT_ID", "GoogleOAuthClientID"])?;
-            let client_secret = required_env(&[
-                "GOOGLE_OAUTH_CLIENT_SECRET",
-                "GoogleOAuthClientSecret",
-            ])?;
+            let client_secret =
+                required_env(&["GOOGLE_OAUTH_CLIENT_SECRET", "GoogleOAuthClientSecret"])?;
             client
                 .post("https://oauth2.googleapis.com/token")
                 .form(&[
@@ -776,10 +795,8 @@ async fn exchange_code(provider: Provider, code: &str, callback: &str) -> Result
         }
         Provider::Scratch => {
             let client_id = required_env(&["SCRATCH_OAUTH_CLIENT_ID", "ScratchOAuthClientID"])?;
-            let client_secret = required_env(&[
-                "SCRATCH_OAUTH_CLIENT_SECRET",
-                "ScratchOAuthClientSecret",
-            ])?;
+            let client_secret =
+                required_env(&["SCRATCH_OAUTH_CLIENT_SECRET", "ScratchOAuthClientSecret"])?;
             let numeric_id = client_id.parse::<u64>().map_err(|_| {
                 tracing::error!("Scratch OAuth client ID is not numeric");
                 oauth_unavailable()
@@ -926,7 +943,9 @@ async fn available_username(
 ) -> Result<(String, String), sqlx::Error> {
     let mut base: String = suggestion
         .chars()
-        .filter(|character| character.is_ascii_alphanumeric() || *character == '_' || *character == '-')
+        .filter(|character| {
+            character.is_ascii_alphanumeric() || *character == '_' || *character == '-'
+        })
         .take(20)
         .collect();
     if base.len() < 3 {
@@ -942,17 +961,19 @@ async fn available_username(
         let stem: String = base.chars().take(keep).collect();
         let display = format!("{stem}{suffix}");
         let username = display.to_lowercase();
-        let exists: bool = sqlx::query_scalar(
-            "SELECT EXISTS(SELECT 1 FROM app.users WHERE username = $1)",
-        )
-        .bind(&username)
-        .fetch_one(pool)
-        .await?;
+        let exists: bool =
+            sqlx::query_scalar("SELECT EXISTS(SELECT 1 FROM app.users WHERE username = $1)")
+                .bind(&username)
+                .fetch_one(pool)
+                .await?;
         if !exists {
             return Ok((username, display));
         }
     }
-    Ok((format!("builder{}", ulid::Ulid::new()), "PatternBuilder".to_owned()))
+    Ok((
+        format!("builder{}", ulid::Ulid::new()),
+        "PatternBuilder".to_owned(),
+    ))
 }
 
 async fn account_creation_enabled(pool: &PgPool) -> Result<bool, sqlx::Error> {
@@ -969,7 +990,15 @@ async fn ephemeral_put<T: Serialize>(prefix: &str, key: &str, value: &T) -> Resu
         tracing::error!(%error, "failed to serialize OAuth state");
         oauth_unavailable()
     })?;
-    let result = redis_command(json!(["SET", format!("{prefix}:{key}"), value, "EX", FLOW_TTL_SECONDS, "NX"])).await?;
+    let result = redis_command(json!([
+        "SET",
+        format!("{prefix}:{key}"),
+        value,
+        "EX",
+        FLOW_TTL_SECONDS,
+        "NX"
+    ]))
+    .await?;
     if result.get("result") == Some(&Value::String("OK".to_owned())) {
         Ok(())
     } else {
@@ -1038,7 +1067,11 @@ fn oauth_unavailable() -> Response {
 }
 
 fn identity_insert_failed(error: sqlx::Error) -> Response {
-    if error.as_database_error().and_then(|error| error.constraint()).is_some() {
+    if error
+        .as_database_error()
+        .and_then(|error| error.constraint())
+        .is_some()
+    {
         return api_error(StatusCode::BAD_REQUEST, "Method already connected");
     }
     query_failed(error)
@@ -1140,7 +1173,10 @@ mod tests {
 
     #[test]
     fn provider_parser_is_strict() {
-        assert_eq!(Provider::parse(Some("github".into())), Some(Provider::Github));
+        assert_eq!(
+            Provider::parse(Some("github".into())),
+            Some(Provider::Github)
+        );
         assert_eq!(Provider::parse(Some("GitHub".into())), None);
         assert_eq!(Provider::parse(None), None);
     }
