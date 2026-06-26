@@ -46,6 +46,7 @@ pub fn router() -> Router<Database> {
     Router::new()
         .route("/api/v1/users/getpfp", get(get_profile_image))
         .route("/api/v1/users/setpfp", post(set_profile_image))
+        .route("/api/v1/users/setpfpadmin", post(set_profile_image_admin))
         .layer(DefaultBodyLimit::max(MAX_UPLOAD_BYTES + 1024 * 1024))
 }
 
@@ -240,6 +241,151 @@ async fn set_profile_image(
         return query_failed(error);
     }
     Json(SuccessResponse { success: true }).into_response()
+}
+
+async fn set_profile_image_admin(
+    State(database): State<Database>,
+    mut multipart: Multipart,
+) -> Response {
+    let Some(pool) = database.pool() else {
+        return database_unavailable();
+    };
+    let mut token = None;
+    let mut target = None;
+    let mut picture = None;
+    loop {
+        let field = match multipart.next_field().await {
+            Ok(field) => field,
+            Err(error) => {
+                tracing::warn!(%error, "invalid admin profile image multipart upload");
+                return api_error(StatusCode::BAD_REQUEST, "InvalidPicture");
+            }
+        };
+        let Some(field) = field else { break };
+        match field.name() {
+            Some("picture") => {
+                picture = match field.bytes().await {
+                    Ok(bytes) if bytes.len() <= MAX_UPLOAD_BYTES => Some(bytes.to_vec()),
+                    Ok(_) => return api_error(StatusCode::BAD_REQUEST, "File too large"),
+                    Err(error) => {
+                        tracing::warn!(%error, "admin profile image upload could not be read");
+                        return api_error(StatusCode::BAD_REQUEST, "InvalidPicture");
+                    }
+                };
+            }
+            Some("token") => token = field.text().await.ok(),
+            Some("target") => target = field.text().await.ok(),
+            _ => {}
+        }
+    }
+    let actor = match authenticate_token(pool, token.as_deref().unwrap_or("undefined")).await {
+        Ok(Some(user)) => user,
+        Ok(None) => return api_error(StatusCode::BAD_REQUEST, "Reauthenticate"),
+        Err(error) => return query_failed(error),
+    };
+    if !actor.admin && !actor.moderator {
+        return api_error(StatusCode::FORBIDDEN, "FeatureDisabledForThisAccount");
+    }
+    let target = target
+        .unwrap_or_else(|| "undefined".to_owned())
+        .to_lowercase();
+    let target_id =
+        match sqlx::query_scalar::<_, String>("SELECT id FROM app.users WHERE username = $1")
+            .bind(target)
+            .fetch_optional(pool)
+            .await
+        {
+            Ok(Some(id)) => id,
+            Ok(None) => return api_error(StatusCode::BAD_REQUEST, "TargetNotFound"),
+            Err(error) => return query_failed(error),
+        };
+    let Some(picture) = picture else {
+        return api_error(StatusCode::BAD_REQUEST, "InvalidPicture");
+    };
+    let png = match normalize_profile_image(picture).await {
+        Ok(png) => png,
+        Err(message) => return api_error(StatusCode::BAD_REQUEST, message),
+    };
+    store_profile_image(pool, &target_id, png).await
+}
+
+async fn store_profile_image(pool: &sqlx::PgPool, user_id: &str, png: Vec<u8>) -> Response {
+    let token = match blob_token() {
+        Ok(token) => token,
+        Err(response) => return *response,
+    };
+    let store_id = match blob_store_id(&token) {
+        Some(store_id) => store_id.to_owned(),
+        None => {
+            tracing::error!("BLOB_READ_WRITE_TOKEN has an invalid format");
+            return api_error(StatusCode::SERVICE_UNAVAILABLE, "StorageUnavailable");
+        }
+    };
+    let pathname = format!("profile-pictures/{user_id}.png");
+    let mut upload_url = reqwest::Url::parse("https://vercel.com/api/blob/")
+        .expect("the Vercel Blob API URL is static and valid");
+    upload_url
+        .query_pairs_mut()
+        .append_pair("pathname", &pathname);
+    let upload = match reqwest::Client::new()
+        .put(upload_url)
+        .bearer_auth(token)
+        .header("x-api-version", "12")
+        .header(
+            "x-api-blob-request-id",
+            format!("{store_id}:{}", uuid::Uuid::new_v4()),
+        )
+        .header("x-vercel-blob-store-id", store_id)
+        .header("x-api-blob-request-attempt", "0")
+        .header("x-vercel-blob-access", "private")
+        .header("x-content-type", "image/png")
+        .header("x-add-random-suffix", "0")
+        .header("x-allow-overwrite", "1")
+        .header("x-cache-control-max-age", "60")
+        .body(png)
+        .send()
+        .await
+    {
+        Ok(response) => response,
+        Err(error) => {
+            tracing::error!(%error, "admin profile image upload failed");
+            return api_error(StatusCode::SERVICE_UNAVAILABLE, "StorageUnavailable");
+        }
+    };
+    if !upload.status().is_success() {
+        tracing::error!(status = %upload.status(), "admin profile image storage rejected upload");
+        return api_error(StatusCode::SERVICE_UNAVAILABLE, "StorageUnavailable");
+    }
+    let blob = match upload.json::<BlobUploadResponse>().await {
+        Ok(blob) if is_private_blob_url(&blob.url) => blob,
+        Ok(_) => {
+            tracing::error!("profile image storage returned a non-private URL");
+            return api_error(StatusCode::SERVICE_UNAVAILABLE, "StorageUnavailable");
+        }
+        Err(error) => {
+            tracing::error!(%error, "profile image storage returned invalid metadata");
+            return api_error(StatusCode::SERVICE_UNAVAILABLE, "StorageUnavailable");
+        }
+    };
+    match sqlx::query(
+        "INSERT INTO app.profile_pictures \
+         (user_id, blob_url, blob_pathname, content_type, etag, updated_at) \
+         VALUES ($1, $2, $3, $4, $5, now()) \
+         ON CONFLICT (user_id) DO UPDATE SET \
+         blob_url = EXCLUDED.blob_url, blob_pathname = EXCLUDED.blob_pathname, \
+         content_type = EXCLUDED.content_type, etag = EXCLUDED.etag, updated_at = now()",
+    )
+    .bind(user_id)
+    .bind(blob.url)
+    .bind(blob.pathname)
+    .bind(blob.content_type)
+    .bind(blob.etag)
+    .execute(pool)
+    .await
+    {
+        Ok(_) => Json(SuccessResponse { success: true }).into_response(),
+        Err(error) => query_failed(error),
+    }
 }
 
 async fn normalize_profile_image(source: Vec<u8>) -> Result<Vec<u8>, &'static str> {
