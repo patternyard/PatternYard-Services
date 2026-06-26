@@ -47,7 +47,7 @@ pub async fn migrate(
                 }
                 eprintln!(
                     "rejected {collection} record {source_id_hash}: {}",
-                    error.message()
+                    error.safe_log_message()
                 );
             }
         }
@@ -342,8 +342,12 @@ impl RecordError {
         self.reason_code
     }
 
-    fn message(&self) -> &str {
-        &self.message
+    fn safe_log_message(&self) -> &str {
+        if self.reason_code == "target-write" {
+            "target database rejected record"
+        } else {
+            &self.message
+        }
     }
 }
 
@@ -431,6 +435,15 @@ mod tests {
         for (collection, fixture) in fixtures {
             migrate_document(collection, &fixture, None).await.unwrap();
         }
+    }
+
+    #[test]
+    fn target_write_errors_have_a_sanitized_log_message() {
+        let error = RecordError {
+            reason_code: "target-write",
+            message: "sensitive database detail".to_owned(),
+        };
+        assert_eq!(error.safe_log_message(), "target database rejected record");
     }
 
     #[tokio::test]
