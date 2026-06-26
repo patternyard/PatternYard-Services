@@ -9,6 +9,7 @@ use serde::Serialize;
 
 mod account_creation;
 mod account_reads;
+mod email_auth;
 mod frontpage_projects;
 mod message_mutations;
 mod message_reads;
@@ -88,6 +89,7 @@ pub(crate) fn router_with_database(database: Database) -> Router {
         .route("/robots.txt", get(robots))
         .merge(account_creation::router())
         .merge(account_reads::router())
+        .merge(email_auth::router())
         .merge(frontpage_projects::router())
         .merge(message_mutations::router())
         .merge(message_reads::router())

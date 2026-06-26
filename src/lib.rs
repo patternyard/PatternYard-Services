@@ -129,6 +129,25 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn email_authentication_routes_are_mounted() {
+        let router = backend::router_with_database(db::Database::default());
+        let response = app_with_router(router)
+            .oneshot(
+                Request::builder()
+                    .method(Method::POST)
+                    .uri("/api/v1/users/resetpassword/sendEmail")
+                    .header("host", "api.patternyard.dev")
+                    .header(header::CONTENT_TYPE, "application/json")
+                    .body(Body::from("{}"))
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+
+        assert_eq!(response.status(), StatusCode::BAD_REQUEST);
+    }
+
+    #[tokio::test]
     async fn unknown_routes_return_a_stable_json_error() {
         let response = app()
             .oneshot(

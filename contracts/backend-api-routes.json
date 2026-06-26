@@ -456,7 +456,7 @@
       "path": "/api/v1/resetpassword/verifyemail",
       "source": "api/v1/routes/users/login/resetpassword/verifyEmail.js",
       "family": "users",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "GET",
@@ -939,21 +939,21 @@
       "path": "/api/v1/users/resetpassword/reset",
       "source": "api/v1/routes/users/login/resetpassword/reset.js",
       "family": "users",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "POST",
       "path": "/api/v1/users/resetpassword/sendEmail",
       "source": "api/v1/routes/users/login/resetpassword/sendEmail.js",
       "family": "users",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "POST",
       "path": "/api/v1/users/resetpassword/sendVerifyEmail",
       "source": "api/v1/routes/users/login/resetpassword/sendVerificationEmail.js",
       "family": "users",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "GET",
