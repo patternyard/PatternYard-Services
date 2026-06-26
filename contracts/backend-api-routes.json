@@ -414,14 +414,14 @@
       "path": "/api/v1/projects/updateProject",
       "source": "api/v1/routes/projects/updateProject.js",
       "family": "projects",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "POST",
       "path": "/api/v1/projects/uploadProject",
       "source": "api/v1/routes/projects/uploadProject.js",
       "family": "projects",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "POST",

@@ -165,6 +165,30 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn project_write_routes_are_mounted() {
+        let router = backend::router_with_database(db::Database::default());
+        for path in [
+            "/api/v1/projects/uploadProject",
+            "/api/v1/projects/updateProject",
+        ] {
+            let response = app_with_router(router.clone())
+                .oneshot(
+                    Request::builder()
+                        .method(Method::POST)
+                        .uri(path)
+                        .header("host", "api.patternyard.dev")
+                        .header(header::CONTENT_TYPE, "multipart/form-data; boundary=x")
+                        .body(Body::from("--x--\r\n"))
+                        .unwrap(),
+                )
+                .await
+                .unwrap();
+
+            assert_eq!(response.status(), StatusCode::SERVICE_UNAVAILABLE);
+        }
+    }
+
+    #[tokio::test]
     async fn unknown_routes_return_a_stable_json_error() {
         let response = app()
             .oneshot(
