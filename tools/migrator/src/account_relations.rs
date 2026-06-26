@@ -176,7 +176,7 @@ async fn migrate_follow(
     }
     let active = document
         .get("active")
-        .map_or(true, |_| boolean(document, "active"));
+        .is_none_or(|_| boolean(document, "active"));
 
     if let Some(pool) = target {
         sqlx::query(
@@ -235,7 +235,7 @@ async fn migrate_block(
     }
     let active = document
         .get("active")
-        .map_or(true, |_| boolean(document, "active"));
+        .is_none_or(|_| boolean(document, "active"));
 
     if let Some(pool) = target {
         if active {
