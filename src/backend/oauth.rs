@@ -545,7 +545,7 @@ async fn scratch_add_password_final(
 }
 
 async fn finish_add_password(database: Database, ticket: String, password: String) -> Response {
-    if ticket.is_empty() || password.is_empty() {
+    if is_missing_legacy_value(&ticket) || is_missing_legacy_value(&password) {
         return api_error(StatusCode::BAD_REQUEST, "Missing access_token or password");
     }
     if !(8..=50).contains(&password.chars().count()) {
@@ -630,8 +630,8 @@ async fn remove_oauth_method(
 }
 
 async fn send_login_success(Query(query): Query<SuccessQuery>) -> Response {
-    if query.token.as_deref().unwrap_or_default().is_empty()
-        || query.username.as_deref().unwrap_or_default().is_empty()
+    if is_missing_legacy_value(query.token.as_deref().unwrap_or_default())
+        || is_missing_legacy_value(query.username.as_deref().unwrap_or_default())
     {
         return api_error(StatusCode::BAD_REQUEST, "Missing token or username");
     }
@@ -644,6 +644,17 @@ async fn send_login_success(Query(query): Query<SuccessQuery>) -> Response {
     response.headers_mut().insert(
         header::CONTENT_SECURITY_POLICY,
         HeaderValue::from_static("default-src 'none'; script-src 'unsafe-inline'; base-uri 'none'; frame-ancestors https://patternyard.dev"),
+    );
+    response.headers_mut().insert(
+        header::CACHE_CONTROL,
+        HeaderValue::from_static("no-store, max-age=0"),
+    );
+    response
+        .headers_mut()
+        .insert(header::PRAGMA, HeaderValue::from_static("no-cache"));
+    response.headers_mut().insert(
+        header::REFERRER_POLICY,
+        HeaderValue::from_static("no-referrer"),
     );
     response
 }
@@ -1095,6 +1106,10 @@ fn legacy_json_string(value: Option<Value>) -> String {
     }
 }
 
+fn is_missing_legacy_value(value: &str) -> bool {
+    value.is_empty() || matches!(value, "undefined" | "null")
+}
+
 fn password_requirements(password: &str) -> bool {
     password.chars().any(|value| value.is_ascii_lowercase())
         && password.chars().any(|value| value.is_ascii_uppercase())
@@ -1135,7 +1150,7 @@ fn api_error(status: StatusCode, message: &'static str) -> Response {
 }
 
 fn database_unavailable() -> Response {
-    api_error(StatusCode::SERVICE_UNAVAILABLE, "DatabaseUnavailable")
+    api_error(StatusCode::SERVICE_UNAVAILABLE, "Database unavailable")
 }
 
 fn query_failed(error: sqlx::Error) -> Response {
@@ -1171,6 +1186,14 @@ mod tests {
         assert!(password_requirements("Builder1!"));
         assert!(!password_requirements("builder1!"));
         assert!(!password_requirements("Builder!!"));
+    }
+
+    #[test]
+    fn legacy_missing_values_include_client_sentinels() {
+        assert!(is_missing_legacy_value(""));
+        assert!(is_missing_legacy_value("undefined"));
+        assert!(is_missing_legacy_value("null"));
+        assert!(!is_missing_legacy_value("builder"));
     }
 
     #[test]

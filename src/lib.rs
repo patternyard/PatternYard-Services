@@ -342,6 +342,12 @@ mod tests {
                 .headers()
                 .contains_key(header::CONTENT_SECURITY_POLICY)
         );
+        assert_eq!(
+            response.headers()[header::CACHE_CONTROL],
+            "no-store, max-age=0"
+        );
+        assert_eq!(response.headers()[header::PRAGMA], "no-cache");
+        assert_eq!(response.headers()[header::REFERRER_POLICY], "no-referrer");
     }
 
     #[tokio::test]
