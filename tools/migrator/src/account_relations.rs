@@ -53,7 +53,7 @@ pub async fn migrate(
         }
     }
 
-    let checksum = hex::encode(stats.checksum.finalize());
+    let checksum = hex::encode(stats.checksum.clone().finalize());
     if let Some(pool) = target {
         write_checkpoint(pool, collection, &stats, &checksum).await?;
     }
@@ -310,6 +310,7 @@ async fn record_rejection(
     Ok(())
 }
 
+#[derive(Debug)]
 struct RecordError {
     reason_code: &'static str,
     message: String,
