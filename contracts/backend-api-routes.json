@@ -726,17 +726,17 @@
     },
     {
       "method": "GET",
-    "path": "/api/v1/users/getuserstats",
-    "source": "api/v1/routes/users/mod/admin_only/getUserStats.js",
-    "family": "users",
-    "status": "implemented"
+      "path": "/api/v1/users/getuserstats",
+      "source": "api/v1/routes/users/mod/admin_only/getUserStats.js",
+      "family": "users",
+      "status": "implemented"
     },
     {
       "method": "GET",
-    "path": "/api/v1/users/getworstoffenders",
-    "source": "api/v1/routes/users/mod/admin_only/getperformancemongostuff.js",
-    "family": "users",
-    "status": "implemented"
+      "path": "/api/v1/users/getworstoffenders",
+      "source": "api/v1/routes/users/mod/admin_only/getperformancemongostuff.js",
+      "family": "users",
+      "status": "implemented"
     },
     {
       "method": "GET",
@@ -995,14 +995,14 @@
       "path": "/api/v1/users/setBadges",
       "source": "api/v1/routes/users/mod/admin_only/setBadges.js",
       "family": "users",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "POST",
       "path": "/api/v1/users/setbadgesmultiple",
       "source": "api/v1/routes/users/mod/admin_only/changeBadgesMultiple.js",
       "family": "users",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "POST",
@@ -1016,7 +1016,7 @@
       "path": "/api/v1/users/setbioadmin",
       "source": "api/v1/routes/users/mod/setBioAdmin.js",
       "family": "users",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "POST",
@@ -1037,7 +1037,7 @@
       "path": "/api/v1/users/setmyfeaturedprojectadmin",
       "source": "api/v1/routes/users/mod/setFeaturedProjectAdmin.js",
       "family": "users",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "POST",
@@ -1079,7 +1079,7 @@
       "path": "/api/v1/users/verifyfollowers",
       "source": "api/v1/routes/users/mod/admin_only/verifyFollowers.js",
       "family": "users",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "GET",
