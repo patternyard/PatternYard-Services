@@ -189,11 +189,34 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn project_compatibility_routes_are_mounted() {
+        let router = backend::router_with_database(db::Database::default());
+        for path in [
+            "/api/v1/projects/getproject?projectID=123&requestType=metadata",
+            "/api/v1/projects/getprojectwrapper?projectId=123",
+            "/123",
+        ] {
+            let response = app_with_router(router.clone())
+                .oneshot(
+                    Request::builder()
+                        .uri(path)
+                        .header("host", "api.patternyard.dev")
+                        .body(Body::empty())
+                        .unwrap(),
+                )
+                .await
+                .unwrap();
+
+            assert_eq!(response.status(), StatusCode::SERVICE_UNAVAILABLE);
+        }
+    }
+
+    #[tokio::test]
     async fn unknown_routes_return_a_stable_json_error() {
         let response = app()
             .oneshot(
                 Request::builder()
-                    .uri("/not-implemented")
+                    .uri("/not/implemented")
                     .header("host", "api.patternyard.dev")
                     .body(Body::empty())
                     .unwrap(),

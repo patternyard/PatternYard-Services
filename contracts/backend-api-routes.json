@@ -22,7 +22,7 @@
       "path": "/:id",
       "source": "api/v1/routes/projects/projectRedirect.js",
       "family": "projects",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "GET",
@@ -211,7 +211,7 @@
       "path": "/api/v1/projects/getprojectwrapper",
       "source": "api/v1/routes/projects/projectWrapper.js",
       "family": "projects",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "GET",
