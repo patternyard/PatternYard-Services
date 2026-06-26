@@ -526,7 +526,7 @@
       "path": "/api/v1/users/changePassword",
       "source": "api/v1/routes/users/login/changePassword.js",
       "family": "users",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "POST",
@@ -897,7 +897,7 @@
       "path": "/api/v1/users/passwordLogin",
       "source": "api/v1/routes/users/login/passwordLogin.js",
       "family": "users",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "POST",

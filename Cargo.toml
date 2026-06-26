@@ -17,8 +17,11 @@ path = "api/services.rs"
 
 [dependencies]
 axum = "0.8"
+bcrypt = "0.19.2"
 chrono = { version = "0.4.45", features = ["serde"] }
 http = "1"
+rand = "0.10.1"
+reqwest = { version = "0.13.4", default-features = false, features = ["json", "form", "rustls"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 sha2 = "0.10"
