@@ -106,7 +106,7 @@
       "path": "/api/v1/projects/backupassetget",
       "source": "api/v1/routes/projects/backupAssetGet.js",
       "family": "projects",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "GET",
@@ -1086,7 +1086,7 @@
       "path": "/file/penguinmod-warm-tier-s2-cf/:asset_name",
       "source": "api/v1/routes/projects/warmTierAssetGet.js",
       "family": "projects",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "GET",

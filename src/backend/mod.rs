@@ -18,6 +18,7 @@ mod owned_project_reads;
 mod policy_state;
 mod profile_images;
 mod profile_writes;
+mod project_assets;
 mod project_interactions;
 mod public_discovery;
 mod public_projects;
@@ -98,6 +99,7 @@ pub(crate) fn router_with_database(database: Database) -> Router {
         .merge(policy_state::router())
         .merge(profile_images::router())
         .merge(profile_writes::router())
+        .merge(project_assets::router())
         .merge(project_interactions::router())
         .merge(public_discovery::router())
         .merge(public_projects::router())

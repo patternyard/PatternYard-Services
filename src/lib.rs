@@ -148,6 +148,23 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn project_asset_routes_are_mounted() {
+        let router = backend::router_with_database(db::Database::default());
+        let response = app_with_router(router)
+            .oneshot(
+                Request::builder()
+                    .uri("/file/penguinmod-warm-tier-s2-cf/123_asset.svg")
+                    .header("host", "api.patternyard.dev")
+                    .body(Body::empty())
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+
+        assert_eq!(response.status(), StatusCode::SERVICE_UNAVAILABLE);
+    }
+
+    #[tokio::test]
     async fn unknown_routes_return_a_stable_json_error() {
         let response = app()
             .oneshot(
