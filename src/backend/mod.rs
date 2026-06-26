@@ -31,6 +31,7 @@ mod report_reads;
 mod session_writes;
 mod social_users;
 mod staff_directory;
+mod user_account_moderation;
 mod user_admin_reads;
 mod user_feed;
 mod user_moderation_writes;
@@ -116,6 +117,7 @@ pub(crate) fn router_with_database(database: Database) -> Router {
         .merge(session_writes::router())
         .merge(social_users::router())
         .merge(staff_directory::router())
+        .merge(user_account_moderation::router())
         .merge(user_admin_reads::router())
         .merge(user_feed::router())
         .merge(user_moderation_writes::router())
