@@ -127,35 +127,35 @@
       "path": "/api/v1/projects/deletemodmessage",
       "source": "api/v1/routes/projects/modActions/reject/deleteModMessage.js",
       "family": "projects",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "POST",
       "path": "/api/v1/projects/deletethumb",
       "source": "api/v1/routes/projects/modActions/deleteThumb.js",
       "family": "projects",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "POST",
       "path": "/api/v1/projects/dispute",
       "source": "api/v1/routes/projects/modActions/reject/dispute.js",
       "family": "projects",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "GET",
       "path": "/api/v1/projects/downloadHardReject",
       "source": "api/v1/routes/projects/modActions/reject/downloadHardRejected.js",
       "family": "projects",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "POST",
       "path": "/api/v1/projects/fixprojectstats",
       "source": "api/v1/routes/projects/modActions/fixStats.js",
       "family": "projects",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "GET",
@@ -260,14 +260,14 @@
       "path": "/api/v1/projects/hardDeleteProject",
       "source": "api/v1/routes/projects/modActions/reject/deleteProject.js",
       "family": "projects",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "POST",
       "path": "/api/v1/projects/hardreject",
       "source": "api/v1/routes/projects/modActions/reject/hardRejectProject.js",
       "family": "projects",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "GET",
@@ -337,28 +337,28 @@
       "path": "/api/v1/projects/manualfeature",
       "source": "api/v1/routes/projects/modActions/manualFeature.js",
       "family": "projects",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "POST",
       "path": "/api/v1/projects/modmessage",
       "source": "api/v1/routes/projects/modActions/reject/modMessage.js",
       "family": "projects",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "POST",
       "path": "/api/v1/projects/modresponse",
       "source": "api/v1/routes/projects/modActions/reject/modResponse.js",
       "family": "projects",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "POST",
       "path": "/api/v1/projects/restore",
       "source": "api/v1/routes/projects/modActions/reject/restore.js",
       "family": "projects",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "GET",
@@ -379,35 +379,35 @@
       "path": "/api/v1/projects/setCanBeFeatured",
       "source": "api/v1/routes/projects/modActions/canBeFeatured.js",
       "family": "projects",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "POST",
       "path": "/api/v1/projects/softreject",
       "source": "api/v1/routes/projects/modActions/reject/softReject.js",
       "family": "projects",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "POST",
       "path": "/api/v1/projects/toggleaccountcreation",
       "source": "api/v1/routes/projects/modActions/toggleAccountCreation.js",
       "family": "projects",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "POST",
       "path": "/api/v1/projects/toggleuploading",
       "source": "api/v1/routes/projects/modActions/toggleUploading.js",
       "family": "projects",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "POST",
       "path": "/api/v1/projects/toggleviewing",
       "source": "api/v1/routes/projects/modActions/toggleViewing.js",
       "family": "projects",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "POST",

@@ -212,6 +212,55 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn project_moderation_routes_are_mounted() {
+        let router = backend::router_with_database(db::Database::default());
+        for path in [
+            "/api/v1/projects/deletemodmessage",
+            "/api/v1/projects/deletethumb",
+            "/api/v1/projects/dispute",
+            "/api/v1/projects/fixprojectstats",
+            "/api/v1/projects/hardDeleteProject",
+            "/api/v1/projects/hardreject",
+            "/api/v1/projects/manualfeature",
+            "/api/v1/projects/modmessage",
+            "/api/v1/projects/modresponse",
+            "/api/v1/projects/restore",
+            "/api/v1/projects/setCanBeFeatured",
+            "/api/v1/projects/softreject",
+            "/api/v1/projects/toggleaccountcreation",
+            "/api/v1/projects/toggleuploading",
+            "/api/v1/projects/toggleviewing",
+        ] {
+            let response = app_with_router(router.clone())
+                .oneshot(
+                    Request::builder()
+                        .method(Method::POST)
+                        .uri(path)
+                        .header("host", "api.patternyard.dev")
+                        .header(header::CONTENT_TYPE, "application/json")
+                        .body(Body::from("{}"))
+                        .unwrap(),
+                )
+                .await
+                .unwrap();
+
+            assert_eq!(response.status(), StatusCode::SERVICE_UNAVAILABLE, "{path}");
+        }
+
+        let response = app_with_router(router)
+            .oneshot(
+                Request::builder()
+                    .uri("/api/v1/projects/downloadHardReject")
+                    .header("host", "api.patternyard.dev")
+                    .body(Body::empty())
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+        assert_eq!(response.status(), StatusCode::SERVICE_UNAVAILABLE);
+    }
+
+    #[tokio::test]
     async fn unknown_routes_return_a_stable_json_error() {
         let response = app()
             .oneshot(
