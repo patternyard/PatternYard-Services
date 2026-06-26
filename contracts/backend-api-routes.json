@@ -491,28 +491,28 @@
       "path": "/api/v1/users/assignPossition",
       "source": "api/v1/routes/users/mod/admin_only/assignPossition.js",
       "family": "users",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "POST",
       "path": "/api/v1/users/ban",
       "source": "api/v1/routes/users/mod/ban.js",
       "family": "users",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "POST",
       "path": "/api/v1/users/banip",
       "source": "api/v1/routes/users/mod/admin_only/banIP.js",
       "family": "users",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "POST",
       "path": "/api/v1/users/banuserip",
       "source": "api/v1/routes/users/mod/admin_only/banUserIP.js",
       "family": "users",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "POST",
@@ -533,7 +533,7 @@
       "path": "/api/v1/users/changeprojectid",
       "source": "api/v1/routes/users/mod/admin_only/changeProjectID.js",
       "family": "users",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "POST",
@@ -547,7 +547,7 @@
       "path": "/api/v1/users/changeusernameadmin",
       "source": "api/v1/routes/users/mod/setUsername.js",
       "family": "users",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "POST",
@@ -589,14 +589,14 @@
       "path": "/api/v1/users/deleteaccount",
       "source": "api/v1/routes/users/mod/admin_only/deleteAccount.js",
       "family": "users",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "POST",
       "path": "/api/v1/users/deleteallemails",
       "source": "api/v1/routes/users/mod/admin_only/deleteEmails.js",
       "family": "users",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "POST",
@@ -876,7 +876,7 @@
       "path": "/api/v1/users/massbanregex",
       "source": "api/v1/routes/users/mod/admin_only/massBan.js",
       "family": "users",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "GET",
@@ -918,7 +918,7 @@
       "path": "/api/v1/users/putonwatchlist",
       "source": "api/v1/routes/users/mod/putOnWatchlist.js",
       "family": "users",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "POST",

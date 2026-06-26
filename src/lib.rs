@@ -261,6 +261,51 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn account_moderation_routes_are_mounted() {
+        let router = backend::router_with_database(db::Database::default());
+        for path in [
+            "/api/v1/users/assignPossition",
+            "/api/v1/users/ban",
+            "/api/v1/users/banip",
+            "/api/v1/users/banuserip",
+            "/api/v1/users/changeprojectid",
+            "/api/v1/users/changeusernameadmin",
+            "/api/v1/users/deleteaccount",
+            "/api/v1/users/deleteallemails",
+            "/api/v1/users/putonwatchlist",
+        ] {
+            let response = app_with_router(router.clone())
+                .oneshot(
+                    Request::builder()
+                        .method(Method::POST)
+                        .uri(path)
+                        .header("host", "api.patternyard.dev")
+                        .header(header::CONTENT_TYPE, "application/json")
+                        .body(Body::from("{}"))
+                        .unwrap(),
+                )
+                .await
+                .unwrap();
+
+            assert_eq!(response.status(), StatusCode::SERVICE_UNAVAILABLE, "{path}");
+        }
+
+        let response = app_with_router(router)
+            .oneshot(
+                Request::builder()
+                    .method(Method::POST)
+                    .uri("/api/v1/users/massbanregex")
+                    .header("host", "api.patternyard.dev")
+                    .header(header::CONTENT_TYPE, "application/json")
+                    .body(Body::from("{}"))
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+        assert_eq!(response.status().as_u16(), 420);
+    }
+
+    #[tokio::test]
     async fn unknown_routes_return_a_stable_json_error() {
         let response = app()
             .oneshot(
