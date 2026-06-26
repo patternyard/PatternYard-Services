@@ -584,14 +584,14 @@ fn legacy_json_bool(value: Option<Value>) -> bool {
     legacy_json_string(value) == "true"
 }
 
-fn parse_birth_date(value: &str) -> Option<chrono::NaiveDate> {
+pub(crate) fn parse_birth_date(value: &str) -> Option<chrono::NaiveDate> {
     chrono::DateTime::parse_from_rfc3339(value)
         .map(|date| date.date_naive())
         .or_else(|_| chrono::NaiveDate::parse_from_str(value, "%Y-%m-%d"))
         .ok()
 }
 
-fn supported_country(value: &str) -> bool {
+pub(crate) fn supported_country(value: &str) -> bool {
     static COUNTRIES: std::sync::OnceLock<CountryLookup> = std::sync::OnceLock::new();
     COUNTRIES
         .get_or_init(|| {
@@ -603,7 +603,7 @@ fn supported_country(value: &str) -> bool {
         .any(|country| country == value)
 }
 
-fn valid_email(email: &str) -> bool {
+pub(crate) fn valid_email(email: &str) -> bool {
     let Some((local, domain)) = email.split_once('@') else {
         return false;
     };
