@@ -165,82 +165,7 @@ async fn set_profile_image(
         Ok(png) => png,
         Err(message) => return api_error(StatusCode::BAD_REQUEST, message),
     };
-    let token = match blob_token() {
-        Ok(token) => token,
-        Err(response) => return *response,
-    };
-    let store_id = match blob_store_id(&token) {
-        Some(store_id) => store_id.to_owned(),
-        None => {
-            tracing::error!("BLOB_READ_WRITE_TOKEN has an invalid format");
-            return api_error(StatusCode::SERVICE_UNAVAILABLE, "StorageUnavailable");
-        }
-    };
-    let pathname = format!("profile-pictures/{}.png", user.id);
-    let mut upload_url = reqwest::Url::parse("https://vercel.com/api/blob/")
-        .expect("the Vercel Blob API URL is static and valid");
-    upload_url
-        .query_pairs_mut()
-        .append_pair("pathname", &pathname);
-    let upload = match reqwest::Client::new()
-        .put(upload_url)
-        .bearer_auth(token)
-        .header("x-api-version", "12")
-        .header(
-            "x-api-blob-request-id",
-            format!("{store_id}:{}", uuid::Uuid::new_v4()),
-        )
-        .header("x-vercel-blob-store-id", store_id)
-        .header("x-api-blob-request-attempt", "0")
-        .header("x-vercel-blob-access", "private")
-        .header("x-content-type", "image/png")
-        .header("x-add-random-suffix", "0")
-        .header("x-allow-overwrite", "1")
-        .header("x-cache-control-max-age", "60")
-        .body(png)
-        .send()
-        .await
-    {
-        Ok(response) => response,
-        Err(error) => {
-            tracing::error!(%error, "profile image upload failed");
-            return api_error(StatusCode::SERVICE_UNAVAILABLE, "StorageUnavailable");
-        }
-    };
-    if !upload.status().is_success() {
-        tracing::error!(status = %upload.status(), "profile image storage rejected upload");
-        return api_error(StatusCode::SERVICE_UNAVAILABLE, "StorageUnavailable");
-    }
-    let blob = match upload.json::<BlobUploadResponse>().await {
-        Ok(blob) if is_private_blob_url(&blob.url) => blob,
-        Ok(_) => {
-            tracing::error!("profile image storage returned a non-private URL");
-            return api_error(StatusCode::SERVICE_UNAVAILABLE, "StorageUnavailable");
-        }
-        Err(error) => {
-            tracing::error!(%error, "profile image storage returned invalid metadata");
-            return api_error(StatusCode::SERVICE_UNAVAILABLE, "StorageUnavailable");
-        }
-    };
-    if let Err(error) = sqlx::query(
-        "INSERT INTO app.profile_pictures \
-         (user_id, blob_url, blob_pathname, content_type, etag, updated_at) \
-         VALUES ($1, $2, $3, $4, $5, now()) \
-         ON CONFLICT (user_id) DO UPDATE SET \
-         blob_url = EXCLUDED.blob_url, blob_pathname = EXCLUDED.blob_pathname, \
-         content_type = EXCLUDED.content_type, etag = EXCLUDED.etag, updated_at = now()",
-    )
-    .bind(user.id)
-    .bind(blob.url)
-    .bind(blob.pathname)
-    .bind(blob.content_type)
-    .bind(blob.etag)
-    .execute(pool)
-    .await
-    {
-        return query_failed(error);
-    }
-    Json(SuccessResponse { success: true }).into_response()
+    store_profile_image(pool, &user.id, png).await
 }
 
 async fn set_profile_image_admin(
@@ -357,9 +282,15 @@ async fn store_profile_image(pool: &sqlx::PgPool, user_id: &str, png: Vec<u8>) -
         return api_error(StatusCode::SERVICE_UNAVAILABLE, "StorageUnavailable");
     }
     let blob = match upload.json::<BlobUploadResponse>().await {
-        Ok(blob) if is_private_blob_url(&blob.url) => blob,
+        Ok(blob)
+            if is_private_blob_url(&blob.url)
+                && blob.pathname == pathname
+                && blob.content_type == "image/png" =>
+        {
+            blob
+        }
         Ok(_) => {
-            tracing::error!("profile image storage returned a non-private URL");
+            tracing::error!("profile image storage returned unexpected metadata");
             return api_error(StatusCode::SERVICE_UNAVAILABLE, "StorageUnavailable");
         }
         Err(error) => {
