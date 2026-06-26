@@ -20,6 +20,7 @@ mod profile_images;
 mod profile_writes;
 mod project_assets;
 mod project_interactions;
+mod project_moderation;
 mod project_writes;
 mod public_discovery;
 mod public_projects;
@@ -102,6 +103,7 @@ pub(crate) fn router_with_database(database: Database) -> Router {
         .merge(profile_writes::router())
         .merge(project_assets::router())
         .merge(project_interactions::router())
+        .merge(project_moderation::router())
         .merge(project_writes::router())
         .merge(public_discovery::router())
         .merge(public_projects::router())

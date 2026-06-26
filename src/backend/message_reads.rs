@@ -24,6 +24,8 @@ struct LegacyMessage {
     receiver: String,
     message: Value,
     disputable: bool,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    dispute: Option<String>,
     #[serde(rename = "projectID", skip_serializing_if = "Option::is_none")]
     project_id: Option<String>,
     read: bool,
@@ -127,7 +129,7 @@ async fn fetch_unread_messages(
     sqlx::query_as::<_, LegacyMessage>(
         "SELECT id, receiver_id AS receiver, \
             CASE WHEN message IS JSON THEN message::jsonb ELSE to_jsonb(message) END AS message, \
-            disputable, project_id, is_read AS read, \
+            disputable, dispute, project_id, is_read AS read, \
             floor(extract(epoch FROM created_at) * 1000)::bigint AS date \
          FROM app.messages \
          WHERE receiver_id = $1 AND NOT is_read \
@@ -205,6 +207,7 @@ mod tests {
             receiver: "user-1".to_owned(),
             message: serde_json::json!({ "type": "notice" }),
             disputable: false,
+            dispute: None,
             project_id: Some("project-1".to_owned()),
             read: false,
             date: 1,
