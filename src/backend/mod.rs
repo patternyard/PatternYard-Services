@@ -33,6 +33,7 @@ mod social_users;
 mod staff_directory;
 mod user_admin_reads;
 mod user_feed;
+mod user_moderation_writes;
 
 #[derive(Serialize)]
 struct ApiMetadata<'a> {
@@ -117,6 +118,7 @@ pub(crate) fn router_with_database(database: Database) -> Router {
         .merge(staff_directory::router())
         .merge(user_admin_reads::router())
         .merge(user_feed::router())
+        .merge(user_moderation_writes::router())
         .with_state(database)
 }
 
