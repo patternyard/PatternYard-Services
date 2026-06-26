@@ -1,4 +1,5 @@
 mod account_relations;
+mod projects;
 
 use anyhow::{Context, Result, bail};
 use chrono::{DateTime, NaiveDate, Utc};
@@ -96,6 +97,9 @@ async fn main() -> Result<()> {
                         limit,
                     )
                     .await
+                }
+                "projects" => {
+                    projects::migrate(source.collection("projects"), target.as_ref(), limit).await
                 }
                 _ => bail!(
                     "collection {collection:?} is not implemented yet; run `audit` for the complete inventory"
