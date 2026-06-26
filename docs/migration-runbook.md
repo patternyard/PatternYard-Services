@@ -14,7 +14,7 @@ This runbook covers the controlled migration from the legacy BackendApi MongoDB 
 ## Rehearsal drumbeat
 
 1. Create a fresh Neon branch from the intended target.
-2. Apply `migrations/0001_initial.sql` to that branch.
+2. Apply the numbered SQL files in `migrations/` to that branch in ascending order.
 3. Run `patternyard-migrator audit` and store only collection counts.
 4. Run each implemented collection with `migrate <collection> --dry-run`.
 5. Run the write migration against the isolated branch.

@@ -16,10 +16,11 @@ name = "services"
 path = "api/services.rs"
 
 [dependencies]
-axum = "0.8"
+axum = { version = "0.8", features = ["multipart"] }
 bcrypt = "0.19.2"
 chrono = { version = "0.4.45", features = ["serde"] }
 http = "1"
+image = { version = "0.25.10", default-features = false, features = ["png", "jpeg"] }
 rand = "0.10.1"
 reqwest = { version = "0.13.4", default-features = false, features = ["json", "form", "rustls"] }
 serde = { version = "1", features = ["derive"] }
