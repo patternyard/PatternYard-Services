@@ -59,12 +59,14 @@ async fn password_login(
     State(database): State<Database>,
     Json(body): Json<PasswordLoginBody>,
 ) -> Response {
-    let username = legacy_json_string(body.username).to_lowercase();
-    let password = legacy_json_string(body.password);
-    let captcha_token = legacy_json_string(body.captcha_token);
-    if username.is_empty() || password.is_empty() {
+    let Some(username) = required_json_string(body.username).map(|value| value.to_lowercase())
+    else {
         return api_error(StatusCode::BAD_REQUEST, "Missing username or password");
-    }
+    };
+    let Some(password) = required_json_string(body.password) else {
+        return api_error(StatusCode::BAD_REQUEST, "Missing username or password");
+    };
+    let captcha_token = legacy_json_string(body.captcha_token);
     if let Err(response) = verify_captcha(&captcha_token).await {
         return response;
     }
@@ -82,9 +84,7 @@ async fn password_login(
         Ok(None) => return api_error(StatusCode::UNAUTHORIZED, "InvalidCredentials"),
         Err(error) => return query_failed(error),
     };
-    if record.password_hash.is_empty()
-        || !bcrypt::verify(&password, &record.password_hash).unwrap_or(false)
-    {
+    if record.password_hash.is_empty() || !verify_password(password, record.password_hash).await {
         return api_error(StatusCode::UNAUTHORIZED, "InvalidCredentials");
     }
 
@@ -99,8 +99,12 @@ async fn change_password(
     Json(body): Json<ChangePasswordBody>,
 ) -> Response {
     let token = legacy_json_string(body.token);
-    let old_password = legacy_json_string(body.old_password);
-    let new_password = legacy_json_string(body.new_password);
+    let Some(old_password) = required_json_string(body.old_password) else {
+        return api_error(StatusCode::BAD_REQUEST, "MissingPassword");
+    };
+    let Some(new_password) = required_json_string(body.new_password) else {
+        return api_error(StatusCode::BAD_REQUEST, "MissingPassword");
+    };
     if new_password.len() < 8 {
         return api_error(StatusCode::BAD_REQUEST, "PasswordTooShort");
     }
@@ -124,15 +128,12 @@ async fn change_password(
             Ok(hash) => hash,
             Err(error) => return query_failed(error),
         };
-    if current_hash.is_empty() || !bcrypt::verify(old_password, &current_hash).unwrap_or(false) {
+    if current_hash.is_empty() || !verify_password(old_password, current_hash).await {
         return api_error(StatusCode::UNAUTHORIZED, "InvalidCredentials");
     }
-    let password_hash = match bcrypt::hash(new_password, bcrypt::DEFAULT_COST) {
+    let password_hash = match hash_password(new_password).await {
         Ok(hash) => hash,
-        Err(error) => {
-            tracing::error!(%error, "password hashing failed");
-            return api_error(StatusCode::INTERNAL_SERVER_ERROR, "Internal server error");
-        }
+        Err(response) => return response,
     };
     let mut transaction = match pool.begin().await {
         Ok(transaction) => transaction,
@@ -201,11 +202,7 @@ async fn create_session_executor(
     transaction: &mut sqlx::Transaction<'_, sqlx::Postgres>,
     user_id: &str,
 ) -> Result<String, sqlx::Error> {
-    use rand::TryRng;
-    let mut bytes = [0_u8; 32];
-    rand::rngs::SysRng
-        .try_fill_bytes(&mut bytes)
-        .expect("operating system random source is available");
+    let bytes: [u8; 32] = rand::random();
     let token: String = bytes.iter().map(|byte| format!("{byte:02x}")).collect();
     let token_hash = crate::auth::hash_token(&token);
     sqlx::query(
@@ -251,16 +248,57 @@ async fn verify_captcha(token: &str) -> Result<(), Response> {
         .await
         .map_err(|error| {
             tracing::error!(%error, "captcha verification request failed");
-            api_error(StatusCode::BAD_REQUEST, "InvalidCaptcha")
+            api_error(StatusCode::SERVICE_UNAVAILABLE, "CaptchaUnavailable")
         })?;
+    if !response.status().is_success() {
+        tracing::error!(status = %response.status(), "captcha verification service failed");
+        return Err(api_error(
+            StatusCode::SERVICE_UNAVAILABLE,
+            "CaptchaUnavailable",
+        ));
+    }
     let payload: Value = response.json().await.map_err(|error| {
         tracing::error!(%error, "captcha verification response was invalid");
-        api_error(StatusCode::BAD_REQUEST, "InvalidCaptcha")
+        api_error(StatusCode::SERVICE_UNAVAILABLE, "CaptchaUnavailable")
     })?;
     if payload.get("success").and_then(Value::as_bool) == Some(true) {
         Ok(())
     } else {
         Err(api_error(StatusCode::BAD_REQUEST, "InvalidCaptcha"))
+    }
+}
+
+async fn verify_password(password: String, hash: String) -> bool {
+    tokio::task::spawn_blocking(move || bcrypt::verify(password, &hash).unwrap_or(false))
+        .await
+        .unwrap_or_else(|error| {
+            tracing::error!(%error, "password verification task failed");
+            false
+        })
+}
+
+async fn hash_password(password: String) -> Result<String, Response> {
+    tokio::task::spawn_blocking(move || bcrypt::hash(password, bcrypt::DEFAULT_COST))
+        .await
+        .map_err(|error| {
+            tracing::error!(%error, "password hashing task failed");
+            api_error(StatusCode::INTERNAL_SERVER_ERROR, "Internal server error")
+        })?
+        .map_err(|error| {
+            tracing::error!(%error, "password hashing failed");
+            api_error(StatusCode::INTERNAL_SERVER_ERROR, "Internal server error")
+        })
+}
+
+fn required_json_string(value: Option<Value>) -> Option<String> {
+    match value {
+        Some(Value::String(value)) if !value.is_empty() => Some(value),
+        Some(Value::String(_)) => None,
+        Some(value) if !value.is_null() => {
+            let value = value.to_string();
+            (!value.is_empty() && value != "undefined" && value != "null").then_some(value)
+        }
+        _ => None,
     }
 }
 
@@ -303,6 +341,17 @@ mod tests {
         assert_eq!(
             serde_json::to_value(SuccessResponse { success: true }).expect("serializes"),
             json!({ "success": true })
+        );
+    }
+
+    #[test]
+    fn required_credentials_reject_missing_and_null_values() {
+        assert_eq!(required_json_string(None), None);
+        assert_eq!(required_json_string(Some(json!(null))), None);
+        assert_eq!(required_json_string(Some(json!(""))), None);
+        assert_eq!(
+            required_json_string(Some(json!("builder"))),
+            Some("builder".into())
         );
     }
 
