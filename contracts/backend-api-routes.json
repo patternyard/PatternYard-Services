@@ -470,21 +470,21 @@
       "path": "/api/v1/users/addoauthmethod",
       "source": "api/v1/routes/users/oauth/addMethod/addOAuthMethod.js",
       "family": "users",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "GET",
       "path": "/api/v1/users/addpasswordtooauth",
       "source": "api/v1/routes/users/oauth/addPassword/addPassword.js",
       "family": "users",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "GET",
       "path": "/api/v1/users/addscratchlogin",
       "source": "api/v1/routes/users/oauth/addMethod/scratchCallback.js",
       "family": "users",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "POST",
@@ -561,7 +561,7 @@
       "path": "/api/v1/users/createoauthaccount",
       "source": "api/v1/routes/users/oauth/createAccount/createOAuthAccount.js",
       "family": "users",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "GET",
@@ -743,70 +743,70 @@
       "path": "/api/v1/users/githubcallback/addmethod",
       "source": "api/v1/routes/users/oauth/addMethod/githubCallback.js",
       "family": "users",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "GET",
       "path": "/api/v1/users/githubcallback/addpassword",
       "source": "api/v1/routes/users/oauth/addPassword/githubCallbackIntermediate.js",
       "family": "users",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "POST",
       "path": "/api/v1/users/githubcallback/addpasswordfinal",
       "source": "api/v1/routes/users/oauth/addPassword/githubCallbackFinal.js",
       "family": "users",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "GET",
       "path": "/api/v1/users/githubcallback/createaccount",
       "source": "api/v1/routes/users/oauth/createAccount/githubCallback.js",
       "family": "users",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "GET",
       "path": "/api/v1/users/githubcallback/login",
       "source": "api/v1/routes/users/oauth/login/githubCallback.js",
       "family": "users",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "GET",
       "path": "/api/v1/users/googlecallback/addmethod",
       "source": "api/v1/routes/users/oauth/addMethod/googleCallback.js",
       "family": "users",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "GET",
       "path": "/api/v1/users/googlecallback/addpassword",
       "source": "api/v1/routes/users/oauth/addPassword/googleCallbackIntermediate.js",
       "family": "users",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "POST",
       "path": "/api/v1/users/googlecallback/addpasswordfinal",
       "source": "api/v1/routes/users/oauth/addPassword/googleCallbackFinal.js",
       "family": "users",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "GET",
       "path": "/api/v1/users/googlecallback/createaccount",
       "source": "api/v1/routes/users/oauth/createAccount/googleCallback.js",
       "family": "users",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "GET",
       "path": "/api/v1/users/googlecallback/login",
       "source": "api/v1/routes/users/oauth/login/googleCallback.js",
       "family": "users",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "GET",
@@ -848,7 +848,7 @@
       "path": "/api/v1/users/loginoauthaccount",
       "source": "api/v1/routes/users/oauth/login/loginOAuthAccount.js",
       "family": "users",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "POST",
@@ -925,7 +925,7 @@
       "path": "/api/v1/users/removeoauthmethod",
       "source": "api/v1/routes/users/oauth/removeMethod/removeOAuthMethod.js",
       "family": "users",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "POST",
@@ -960,35 +960,35 @@
       "path": "/api/v1/users/scratchaddpassword",
       "source": "api/v1/routes/users/oauth/addPassword/scratchCallbackIntermediate.js",
       "family": "users",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "GET",
       "path": "/api/v1/users/scratchaddpasswordfinal",
       "source": "api/v1/routes/users/oauth/addPassword/scratchCallbackFinal.js",
       "family": "users",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "GET",
       "path": "/api/v1/users/scratchoauthcreate",
       "source": "api/v1/routes/users/oauth/createAccount/scratchCallback.js",
       "family": "users",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "GET",
       "path": "/api/v1/users/scratchoauthlogin",
       "source": "api/v1/routes/users/oauth/login/scratchCallback.js",
       "family": "users",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "GET",
       "path": "/api/v1/users/sendloginsuccess",
       "source": "api/v1/routes/users/oauth/sendLoginSuccess.js",
       "family": "users",
-      "status": "unimplemented"
+      "status": "implemented"
     },
     {
       "method": "POST",

@@ -306,6 +306,51 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn oauth_routes_are_mounted() {
+        let router = backend::router_with_database(db::Database::default());
+        for path in [
+            "/api/v1/users/addoauthmethod?method=invalid",
+            "/api/v1/users/addpasswordtooauth?method=invalid",
+            "/api/v1/users/loginoauthaccount?method=invalid",
+        ] {
+            let response = app_with_router(router.clone())
+                .oneshot(
+                    Request::builder()
+                        .uri(path)
+                        .header("host", "api.patternyard.dev")
+                        .body(Body::empty())
+                        .unwrap(),
+                )
+                .await
+                .unwrap();
+            assert_eq!(response.status(), StatusCode::BAD_REQUEST, "{path}");
+        }
+
+        let response = app_with_router(router)
+            .oneshot(
+                Request::builder()
+                    .uri("/api/v1/users/sendloginsuccess?token=test&username=builder")
+                    .header("host", "api.patternyard.dev")
+                    .body(Body::empty())
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+        assert_eq!(response.status(), StatusCode::OK);
+        assert!(
+            response
+                .headers()
+                .contains_key(header::CONTENT_SECURITY_POLICY)
+        );
+        assert_eq!(
+            response.headers()[header::CACHE_CONTROL],
+            "no-store, max-age=0"
+        );
+        assert_eq!(response.headers()[header::PRAGMA], "no-cache");
+        assert_eq!(response.headers()[header::REFERRER_POLICY], "no-referrer");
+    }
+
+    #[tokio::test]
     async fn unknown_routes_return_a_stable_json_error() {
         let response = app()
             .oneshot(
