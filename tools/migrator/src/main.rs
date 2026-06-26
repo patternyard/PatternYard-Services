@@ -1,3 +1,5 @@
+mod account_relations;
+
 use anyhow::{Context, Result, bail};
 use chrono::{DateTime, NaiveDate, Utc};
 use clap::{Parser, Subcommand};
@@ -52,6 +54,7 @@ struct MigrationStats {
     source: u64,
     migrated: u64,
     rejected: u64,
+    checksum: Sha256,
 }
 
 #[tokio::main]
@@ -85,6 +88,15 @@ async fn main() -> Result<()> {
 
             match collection.as_str() {
                 "users" => migrate_users(source.collection("users"), target.as_ref(), limit).await,
+                "accountCustomization" | "loggedIPs" | "followers" | "oauthIDs" | "blocking" => {
+                    account_relations::migrate(
+                        &collection,
+                        source.collection(&collection),
+                        target.as_ref(),
+                        limit,
+                    )
+                    .await
+                }
                 _ => bail!(
                     "collection {collection:?} is not implemented yet; run `audit` for the complete inventory"
                 ),
@@ -130,6 +142,7 @@ async fn migrate_users(
     while let Some(document) = cursor.try_next().await.context("advance users cursor")? {
         stats.source += 1;
         let source_id_hash = safe_source_hash(&document);
+        stats.checksum.update(source_id_hash.as_bytes());
 
         match UserRecord::from_document(&document) {
             Ok(user) => {
@@ -153,31 +166,35 @@ async fn migrate_users(
         }
     }
 
+    let checksum = hex::encode(stats.checksum.finalize());
     if let Some(pool) = target {
         sqlx::query(
             "INSERT INTO migration.checkpoints
-                (collection, source_count, migrated_count, rejected_count, completed_at)
-             VALUES ('users', $1, $2, $3, now())
+                (collection, source_count, migrated_count, rejected_count, checksum, completed_at)
+             VALUES ('users', $1, $2, $3, $4, now())
              ON CONFLICT (collection) DO UPDATE SET
                 source_count = EXCLUDED.source_count,
                 migrated_count = EXCLUDED.migrated_count,
                 rejected_count = EXCLUDED.rejected_count,
+                checksum = EXCLUDED.checksum,
                 updated_at = now(),
                 completed_at = EXCLUDED.completed_at",
         )
         .bind(stats.source as i64)
         .bind(stats.migrated as i64)
         .bind(stats.rejected as i64)
+        .bind(&checksum)
         .execute(pool)
         .await
         .context("write users checkpoint")?;
     }
 
     println!(
-        "users: source={} migrated={} rejected={} mode={}",
+        "users: source={} migrated={} rejected={} checksum={} mode={}",
         stats.source,
         stats.migrated,
         stats.rejected,
+        checksum,
         if target.is_some() { "write" } else { "dry-run" }
     );
 
