@@ -1,5 +1,6 @@
 mod account_relations;
 mod communications;
+mod project_stats;
 mod projects;
 
 use anyhow::{Context, Result, bail};
@@ -106,6 +107,14 @@ async fn main() -> Result<()> {
                     communications::migrate(
                         &collection,
                         source.collection(&collection),
+                        target.as_ref(),
+                        limit,
+                    )
+                    .await
+                }
+                "projectStats" => {
+                    project_stats::migrate(
+                        source.collection("projectStats"),
                         target.as_ref(),
                         limit,
                     )
