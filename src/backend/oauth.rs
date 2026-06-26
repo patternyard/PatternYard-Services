@@ -833,6 +833,7 @@ async fn exchange_code(provider: Provider, code: &str, callback: &str) -> Result
         .ok_or_else(|| api_error(StatusCode::BAD_REQUEST, "Invalid code"))
 }
 
+#[allow(clippy::result_large_err)]
 fn authorization_url(provider: Provider, callback: &str, state: &str) -> Result<String, Response> {
     let (base, client_id) = match provider {
         Provider::Scratch => (
@@ -1050,6 +1051,7 @@ async fn redis_command(command: Value) -> Result<Value, Response> {
     })
 }
 
+#[allow(clippy::result_large_err)]
 fn required_env(names: &[&str]) -> Result<String, Response> {
     for name in names {
         if let Ok(value) = env::var(name)
