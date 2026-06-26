@@ -198,7 +198,7 @@ async fn create_session(pool: &sqlx::PgPool, user_id: &str) -> Result<String, sq
     Ok(token)
 }
 
-async fn create_session_executor(
+pub(crate) async fn create_session_executor(
     transaction: &mut sqlx::Transaction<'_, sqlx::Postgres>,
     user_id: &str,
 ) -> Result<String, sqlx::Error> {
@@ -216,7 +216,7 @@ async fn create_session_executor(
     Ok(token)
 }
 
-async fn verify_captcha(token: &str) -> Result<(), Response> {
+pub(crate) async fn verify_captcha(token: &str) -> Result<(), Response> {
     let enabled = std::env::var("CF_CAPTCHA_ENABLED")
         .map(|value| value != "false")
         .unwrap_or(true);
@@ -277,7 +277,7 @@ async fn verify_password(password: String, hash: String) -> bool {
         })
 }
 
-async fn hash_password(password: String) -> Result<String, Response> {
+pub(crate) async fn hash_password(password: String) -> Result<String, Response> {
     tokio::task::spawn_blocking(move || bcrypt::hash(password, bcrypt::DEFAULT_COST))
         .await
         .map_err(|error| {
