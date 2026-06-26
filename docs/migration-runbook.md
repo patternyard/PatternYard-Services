@@ -16,7 +16,7 @@ This runbook covers the controlled migration from the legacy BackendApi MongoDB 
 1. Create a fresh Neon branch from the intended target.
 2. Apply the numbered SQL files in `migrations/` to that branch in ascending order.
 3. Run `patternyard-migrator audit` and store only collection counts.
-4. Run each implemented collection with `migrate <collection> --dry-run`. Account-dependent collections must run in this order: `users`, `accountCustomization`, `loggedIPs`, `followers`, `oauthIDs`, then `blocking`.
+4. Run each implemented collection with `migrate <collection> --dry-run`. Account-dependent collections must run in this order: `users`, `accountCustomization`, `loggedIPs`, `followers`, `oauthIDs`, `blocking`, then `projects`. Project metadata intentionally runs after users; its remix links are restored in a second pass after all project rows exist.
 5. Run the write migration against the isolated branch in the same dependency order. Every collection writes a source count, migrated count, rejected count, and deterministic source-ID checksum to `migration.checkpoints`.
 6. Compare source/target counts, relationship coverage, stable IDs, aggregate checksums, and sampled non-sensitive semantics.
 7. Resolve every row in `migration.rejections`; rerun to prove idempotency.
