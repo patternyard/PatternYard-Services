@@ -2,6 +2,7 @@ mod account_relations;
 mod communications;
 mod project_stats;
 mod projects;
+mod runtime_data;
 
 use anyhow::{Context, Result, bail};
 use chrono::{DateTime, NaiveDate, Utc};
@@ -115,6 +116,15 @@ async fn main() -> Result<()> {
                 "projectStats" => {
                     project_stats::migrate(
                         source.collection("projectStats"),
+                        target.as_ref(),
+                        limit,
+                    )
+                    .await
+                }
+                "runtimeConfig" | "illegalList" | "lastPolicyUpdates" => {
+                    runtime_data::migrate(
+                        &collection,
+                        source.collection(&collection),
                         target.as_ref(),
                         limit,
                     )
